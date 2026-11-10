@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#cdb5ab">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&family=Nanum+Brush+Script&family=Yellowtail&family=Pinyon+Script&family=Gloock&family=Limelight&family=Anton&family=Caveat:wght@500;600&family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&family=UnifrakturMaguntia&family=Nanum+Brush+Script&family=Yellowtail&family=Pinyon+Script&family=Gloock&family=Limelight&family=Anton&family=Caveat:wght@500;600&family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap">
 <style>
 /* layout: shop (a wall of cut-out cakes) -> poster editor (poster centre, dock right, drawer left)
    -> receive (same poster, lights off). Everything sits in a dusky rose room. */
@@ -99,7 +99,7 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 .styles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .styles button { border: 0; border-radius: 12px; background: rgba(255, 255, 255, 0.75); cursor: pointer; padding: 8px 2px 6px; display: grid; justify-items: center; gap: 2px; font: 11.5px var(--ui); color: var(--ink); }
 .styles button[aria-pressed="true"] { background: #fff; outline: 2px solid var(--ink); }
-.styles svg { width: 26px; height: 70px; }
+.styles svg { width: 22px; height: 84px; }
 .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
 .swatches button { width: 30px; height: 30px; border-radius: 50%; border: 0; cursor: pointer; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.12); }
 .swatches button[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 2px; }
@@ -133,23 +133,37 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 .tk-art { position: absolute; right: 16px; top: 14px; width: 52px; height: 52px; border-radius: 8px; object-fit: cover; }
 .exit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); right: max(14px, env(safe-area-inset-right, 0px)); z-index: 3; font: 500 13px var(--ui); border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(246, 240, 236, 0.9); cursor: pointer; }
 
-.flame .fl { transform-box: fill-box; transform-origin: 50% 92%; animation: flick 1.3s ease-in-out infinite; }
-.flame .glow { mix-blend-mode: screen; animation: breathe 2.6s ease-in-out infinite; }
-.flame.ignite .fl, .flame.ignite .glow { transform-box: fill-box; transform-origin: 50% 80%; animation: ignite 0.7s cubic-bezier(.3, 1.6, .5, 1) both, flick 1.3s 0.7s ease-in-out infinite; }
-.flame.out .fl, .flame.out .glow { animation: none; transform: scale(0.1, 0.02); opacity: 0; transition: transform 0.35s ease-in, opacity 0.35s; }
+.flame .fl { transform-box: fill-box; transform-origin: 50% 100%; animation: flick 2.4s ease-in-out infinite; }
+.flame .glow { animation: breathe 3s ease-in-out infinite; }
+.flame.ignite .fl, .flame.ignite .glow { transform-box: fill-box; transform-origin: 50% 100%; animation: ignite 0.8s cubic-bezier(.3, 1.5, .5, 1) both, flick 2.4s 0.8s ease-in-out infinite; }
+.flame.out .fl, .flame.out .glow { animation: none; transform: scale(0.15, 0.05); opacity: 0; transition: transform 0.35s ease-in, opacity 0.35s; }
 .smoke path { fill: none; stroke: rgba(236, 230, 222, 0.85); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 140; stroke-dashoffset: 140; animation: smoke 2.6s ease-out forwards; }
 .smoke path:nth-child(2) { stroke-width: 2; animation-delay: 0.25s; }
-@keyframes flick { 0%, 100% { transform: scale(1, 1) skewX(0); } 25% { transform: scale(0.95, 1.06) skewX(-2deg); } 50% { transform: scale(1.03, 0.96) skewX(1.5deg); } 75% { transform: scale(0.98, 1.04) skewX(-1deg); } }
-@keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+@keyframes flick { 0%, 100% { transform: scale(1, 1) skewX(0); } 20% { transform: scale(0.97, 1.04) skewX(-1.5deg); } 45% { transform: scale(1.02, 0.97) skewX(1deg); } 70% { transform: scale(0.98, 1.03) skewX(-0.6deg); } }
+@keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.75; } }
 @keyframes ignite { 0% { transform: scale(0.05, 0.05); opacity: 0; } 60% { transform: scale(1.25, 1.4); opacity: 1; } 100% { transform: scale(1, 1); } }
 @keyframes smoke { 0% { stroke-dashoffset: 140; opacity: 0.9; transform: translateY(0); } 100% { stroke-dashoffset: 0; opacity: 0; transform: translateY(-30px); } }
 @media (prefers-reduced-motion: reduce) { .flame .fl, .flame .glow { animation: none !important; } .wall button:hover { transform: none; } }
+
+/* the candle picker is a side panel, not a modal, so the cake stays in view while the candle changes on it */
+.sheet.panel { inset: auto max(18px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 20px) auto; width: 380px; display: block; padding: 0; background: none; }
+.sheet.panel .box { width: 100%; max-height: calc(100vh - 40px); box-shadow: 0 10px 40px rgba(40, 20, 20, 0.18); }
+body.panel .dock, body.panel .tab { display: none; }
+body.panel .stage { padding-right: 420px; }
+.candle.draft .body { filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.9)); }
 
 @media (max-width: 760px) {
   .wall { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 8px; }
   .stage { padding: calc(env(safe-area-inset-top, 0px) + 58px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 92px) max(16px, env(safe-area-inset-left, 0px)); }
   .dock { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
   .btn { font-size: 14px; padding: 12px 6px; }
+  .sheet.panel { inset: auto 0 0 0; width: auto; }
+  .sheet.panel .box { border-radius: 22px 22px 0 0; max-height: 48vh; padding: 18px 18px calc(env(safe-area-inset-bottom, 0px) + 18px); }
+  .sheet.panel .results { max-height: 26vh; }
+  .swatches { gap: 8px; }
+  .swatches button { width: 26px; height: 26px; }
+  body.panel .stage { padding-right: 16px; padding-top: 16px; padding-bottom: calc(48vh + 10px); }
+  body.panel .looks, body.panel .back { display: none; }
   .looks { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); right: max(14px, env(safe-area-inset-right, 0px)); gap: 8px; padding: 7px 10px; }
   .looks button { width: 24px; height: 24px; }
   .hint { right: auto; left: 0; top: auto; bottom: calc(100% + 14px); translate: none; width: min(250px, calc(100vw - 32px)); }
@@ -164,7 +178,7 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 <main class="shop" id="shop">
   <h1 id="logo" aria-label="Someone Baked You a Playlist"></h1>
   <p class="shop-note" id="shop-note" hidden></p>
-  <div class="sub">Pick a cake ♡</div>
+  <div class="sub">Pick a cake</div>
   <div class="wall" id="wall"></div>
 </main>
 
@@ -207,7 +221,7 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
   </div>
 </div>
 
-<div class="sheet" id="s-candle" hidden>
+<div class="sheet panel" id="s-candle" hidden>
   <div class="box glass">
     <button type="button" class="x" data-close aria-label="Close">×</button>
     <div id="c-step1" style="display:grid;gap:12px">
@@ -271,20 +285,21 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
   const W = 800, H = 1000, MAX = 10;
   // shared links live at /c/<id>, so cake images need a root path there
   const ASSETS = location.pathname.startsWith("/c/") ? "/cakes/" : "cakes/";
+  const FLAME_DIR = ASSETS.replace("cakes", "flames");
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
   // cut-out cakes; top = the frosted top surface as an ellipse, in fractions of the image
   const CAKES = [
     { id: "cherry", w: 760, h: 754, top: [0.514, 0.279, 0.296, 0.14] },
-    { id: "vanilla", w: 652, h: 612, top: [0.472, 0.321, 0.31, 0.139] },
+    { id: "ruffle", w: 760, h: 721, top: [0.47, 0.3, 0.27, 0.12] },
     { id: "pink", w: 708, h: 686, top: [0.508, 0.312, 0.321, 0.139] },
     { id: "bows", w: 770, h: 634, top: [0.477, 0.345, 0.321, 0.164] },
-    { id: "matcha", w: 708, h: 788, top: [0.513, 0.275, 0.332, 0.125] },
+    { id: "matcha", w: 760, h: 792, top: [0.5, 0.255, 0.33, 0.12] },
     { id: "strawberry", w: 742, h: 622, top: [0.497, 0.3, 0.317, 0.159] },
-    { id: "lemon", w: 694, h: 732, top: [0.457, 0.289, 0.288, 0.115] },
+    { id: "butter", w: 722, h: 756, top: [0.475, 0.31, 0.3, 0.11] },
     { id: "sweet", w: 768, h: 634, top: [0.518, 0.34, 0.302, 0.154] },
     { id: "lavender", w: 752, h: 560, top: [0.483, 0.385, 0.308, 0.174] },
-    { id: "choco", w: 782, h: 644, top: [0.483, 0.37, 0.293, 0.149] },
+    { id: "choco", w: 766, h: 746, top: [0.51, 0.345, 0.3, 0.12] },
     { id: "social", w: 713, h: 570, top: [0.505, 0.29, 0.3, 0.15] },
   ];
   // where a cake sits on the poster: fit inside the look's box, plate resting on its bottom line
@@ -305,39 +320,53 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
   const shade = (c, t) => (t > 0 ? mix(c, "#ffffff", t) : mix(c, "#000000", -t));
   let seed = 5; const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
 
-  // ---------- candles ----------
-  const STYLES = { taper: { name: "Taper", w: 9, h: 128 }, stripe: { name: "Striped", w: 10, h: 104 }, twist: { name: "Twisted", w: 12, h: 108 }, skinny: { name: "Skinny", w: 6, h: 140 }, curl: { name: "Curly", w: 6, h: 118 } };
-  const WAX = { cream: "#f3e6cc", blush: "#eeb3bb", cherry: "#c4323d", butter: "#f1d684", sage: "#a9bf96", powder: "#a6c2da", cocoa: "#7a4a35", gold: "#d4a94e" };
+  // ---------- candles: modelled on real party candles (spiral beads, barley twist, grooved twist, taper, metallic) ----------
+  const STYLES = { bubble: { name: "Bubble", w: 16, h: 120 }, swirl: { name: "Swirl", w: 13, h: 128 }, twist: { name: "Twist", w: 12, h: 136 }, taper: { name: "Taper", w: 11, h: 142 }, metal: { name: "Metallic", w: 8, h: 156 } };
+  const WAX = { blush: "#f2a7bb", baby: "#a8c5ec", butter: "#f5d96a", mint: "#bde2cd", lilac: "#c8b2e6", cream: "#f4eadb", cherry: "#d6343f", coral: "#f08a6c", silver: "#c6cacf", gold: "#d6ae55" };
+  // flames cut from a real photo; each sits with its bottom centre on the wick
+  const FLAMES = [{ f: "a", w: 120, h: 173, ax: 51 }, { f: "b", w: 120, h: 182, ax: 60 }, { f: "d", w: 120, h: 182, ax: 49 }];
   function candleSVG(style, color, x, y, idp, k, lit) {
-    const St = STYLES[style], w = St.w, h = St.h, c = WAX[color], g = `${idp}g${k}`, L = shade(c, 0.45), D = shade(c, -0.3);
-    let defs = `<linearGradient id="${g}" x1="0" x2="1"><stop offset="0" stop-color="${D}"/><stop offset=".35" stop-color="${L}"/><stop offset=".7" stop-color="${c}"/><stop offset="1" stop-color="${D}"/></linearGradient>`;
-    let body = "";
+    const St = STYLES[style] || STYLES.taper, w = St.w, h = St.h, c = WAX[color] || WAX.cream, g = `${idp}g${k}`;
+    const metal = style === "metal" || color === "silver" || color === "gold";
+    const L = shade(c, 0.5), D = shade(c, -0.28);
+    let defs = metal
+      ? `<linearGradient id="${g}" x1="0" x2="1"><stop offset="0" stop-color="${shade(c, -0.45)}"/><stop offset=".22" stop-color="${shade(c, 0.75)}"/><stop offset=".4" stop-color="${c}"/><stop offset=".62" stop-color="${shade(c, -0.3)}"/><stop offset=".8" stop-color="${shade(c, 0.45)}"/><stop offset="1" stop-color="${shade(c, -0.5)}"/></linearGradient>`
+      : `<linearGradient id="${g}" x1="0" x2="1"><stop offset="0" stop-color="${D}"/><stop offset=".3" stop-color="${L}"/><stop offset=".62" stop-color="${c}"/><stop offset="1" stop-color="${shade(c, -0.35)}"/></linearGradient>`;
     const x0 = x - w / 2, top = y - h;
-    if (style === "taper") {
-      body = `<path d="M${x0} ${y} L${x0 + 0.6} ${top + 6} Q${x} ${top - 3} ${x0 + w - 0.6} ${top + 6} L${x0 + w} ${y} Z" fill="url(#${g})"/><path d="M${x0 + 1} ${top + 8} q1 14 2 18 q1 3 2 -2 q0 -8 1 -15" fill="${L}" opacity=".9"/>`;
-    } else if (style === "stripe") {
+    let body = "";
+    if (style === "bubble") {
+      // a stack of soft beads, drawn top-down so each lower bead tucks over the one above it
+      const n = Math.floor(h / 9);
+      for (let i = n - 1; i >= 0; i--) {
+        const yc = y - 4 - i * 9, dx = Math.sin(i * 1.25) * 1.1;
+        body += `<ellipse cx="${(x + dx).toFixed(1)}" cy="${yc.toFixed(1)}" rx="${(w / 2 + 1.3).toFixed(1)}" ry="6.2" fill="url(#${g})"/><ellipse cx="${(x + dx - w * 0.2).toFixed(1)}" cy="${(yc - 1.6).toFixed(1)}" rx="${(w * 0.13).toFixed(1)}" ry="2" fill="#fff" opacity=".45"/>`;
+      }
+      body += `<ellipse cx="${x}" cy="${top + 3}" rx="${w / 2}" ry="2.6" fill="${L}"/>`;
+    } else if (style === "swirl") {
       const p = `${idp}p${k}`;
-      defs += `<pattern id="${p}" width="10" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(-35 ${x} ${y})"><rect width="10" height="14" fill="#f6eedf"/><rect width="10" height="6" fill="${c}"/></pattern>`;
-      body = `<rect x="${x0}" y="${top}" width="${w}" height="${h}" rx="2" fill="url(#${p})"/><rect x="${x0}" y="${top}" width="${w}" height="${h}" rx="2" fill="url(#${g})" opacity=".45" style="mix-blend-mode:multiply"/>`;
+      defs += `<pattern id="${p}" width="12" height="13" patternUnits="userSpaceOnUse" patternTransform="rotate(-38 ${x} ${y})"><rect width="12" height="13" fill="#fbf6ef"/><rect width="12" height="6.5" fill="${c}"/></pattern>`;
+      let d = `M${x0} ${y}`;
+      for (let yy = y; yy >= top; yy -= 3) d += ` L${(x0 - Math.sin((y - yy) / 3.2) * 0.8).toFixed(1)} ${yy}`;
+      for (let yy = top; yy <= y; yy += 3) d += ` L${(x0 + w + Math.sin((y - yy) / 3.2 + 1.6) * 0.8).toFixed(1)} ${yy}`;
+      body = `<path d="${d}Z" fill="url(#${p})"/><path d="${d}Z" fill="url(#${g})" opacity=".55" style="mix-blend-mode:multiply"/><rect x="${x0 + w * 0.22}" y="${top + 2}" width="${w * 0.16}" height="${h - 4}" rx="1" fill="#fff" opacity=".35"/>`;
     } else if (style === "twist") {
-      body = `<rect x="${x0}" y="${top}" width="${w}" height="${h}" rx="3" fill="url(#${g})"/>`;
-      for (let yy = top + 4; yy < y - 2; yy += 9) body += `<path d="M${x0} ${yy + 6} Q${x} ${yy - 2} ${x0 + w} ${yy}" stroke="${D}" stroke-width="1.6" fill="none" opacity=".55"/><path d="M${x0} ${yy + 4} Q${x} ${yy - 4} ${x0 + w} ${yy - 2}" stroke="${L}" stroke-width="1.4" fill="none" opacity=".8"/>`;
-    } else if (style === "skinny") {
-      body = `<rect x="${x0}" y="${top}" width="${w}" height="${h}" rx="2" fill="url(#${g})"/>`;
+      body = `<rect x="${x0}" y="${top}" width="${w}" height="${h}" rx="2.5" fill="url(#${g})"/>`;
+      for (let yy = top + 4; yy < y - 2; yy += 7) body += `<path d="M${x0} ${yy + 5} Q${x} ${yy - 1} ${x0 + w} ${yy}" stroke="${D}" stroke-width="1.5" fill="none" opacity=".5"/><path d="M${x0} ${yy + 3} Q${x} ${yy - 3} ${x0 + w} ${yy - 2}" stroke="${L}" stroke-width="1.2" fill="none" opacity=".85"/>`;
+    } else if (style === "metal") {
+      body = `<rect x="${x0}" y="${top}" width="${w}" height="${h}" rx="1.5" fill="url(#${g})"/>`;
+      for (let yy = top + 3; yy < y - 1; yy += 5) body += `<path d="M${x0} ${yy + 3.2} L${x0 + w} ${yy}" stroke="${shade(c, -0.35)}" stroke-width=".9" opacity=".55"/>`;
     } else {
-      let d = `M${x} ${y}`; for (let yy = y; yy > top; yy -= 4) d += ` L${(x + Math.sin((y - yy) / 9) * 6).toFixed(1)} ${yy}`;
-      body = `<path d="${d}" stroke="url(#${g})" stroke-width="${w}" fill="none" stroke-linecap="round"/><path d="${d}" stroke="${L}" stroke-width="1.6" fill="none" opacity=".7" transform="translate(-1.5 0)"/>`;
+      body = `<path d="M${x0} ${y} L${x0 + 0.7} ${top + 4} Q${x} ${top - 2} ${x0 + w - 0.7} ${top + 4} L${x0 + w} ${y} Z" fill="url(#${g})"/><rect x="${x0 + w * 0.24}" y="${top + 5}" width="${w * 0.14}" height="${h - 8}" fill="#fff" opacity=".35"/>`;
     }
-    const wx = style === "curl" ? x + Math.sin(h / 9) * 6 : x;
-    const wick = `<path d="M${wx} ${top + 1} q1 -5 0 -9" stroke="#2a1d17" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
-    // a dab of cream pushed up around the base so the candle sits in the frosting
-    const base = `<ellipse cx="${x}" cy="${y + 1}" rx="${w * 1.1 + 3}" ry="${w * 0.42 + 2}" fill="rgba(70,30,20,.22)"/><ellipse cx="${x}" cy="${y - 1}" rx="${w * 0.9 + 3}" ry="${w * 0.35 + 2}" fill="#f7ecdc"/>`;
-    const flame = `<g class="flame${lit === "ignite" ? " ignite" : ""}${lit ? "" : " out"}" transform="translate(${wx.toFixed(1)} ${top - 8})">
-      <circle class="glow" r="58" fill="url(#${idp}glow)"/>
-      <path class="fl" d="M0 -38 C10 -20 11 -6 0 2 C-11 -6 -10 -20 0 -38 Z" fill="url(#${idp}flame)"/>
-      <path class="fl" d="M0 -18 C4 -10 4 -4 0 0 C-4 -4 -4 -10 0 -18 Z" fill="#fffbe8"/></g>`;
+    // soft shading so it sits in the same light as the photo
+    body += `<rect x="${x0 - 1.5}" y="${y - 22}" width="${w + 3}" height="22" fill="url(#${idp}foot)"/>`;
+    const wick = `<path d="M${x} ${top + 1} q1.2 -4 0 -8" stroke="#2a1d17" stroke-width="1.7" fill="none" stroke-linecap="round"/>`;
+    const F = FLAMES[k % FLAMES.length], sc = 0.42 * Math.pow(w / 12, 0.3), fw = F.w * sc, fh = F.h * sc;
+    const flame = `<g class="flame${lit === "ignite" ? " ignite" : ""}${lit ? "" : " out"}" transform="translate(${x} ${top - 4})">
+      <circle class="glow" cy="${(-fh * 0.42).toFixed(1)}" r="${(fh * 0.95).toFixed(1)}" fill="url(#${idp}glow)"/>
+      <image class="fl" href="${FLAME_DIR}${F.f}.webp" x="${(-F.ax * sc).toFixed(1)}" y="${(-fh).toFixed(1)}" width="${fw.toFixed(1)}" height="${fh.toFixed(1)}" style="animation-delay:-${(k * 0.37) % 2}s"/></g>`;
     const hit = `<rect x="${x - 16}" y="${top - 46}" width="32" height="${h + 50}" fill="transparent"/>`;
-    return { defs, svg: `${hit}<g class="body">${body}${base}${wick}</g>${flame}`, wick: [wx, top - 8] };
+    return { defs, svg: `${hit}<g class="body">${body}${wick}</g>`, flame, base: [x, y, w], wick: [x, top - 14] };
   }
 
   // ---------- toppers ----------
@@ -427,20 +456,40 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
           ${lines(734, 934, 20, ["BLOW GENTLY", "TO LISTEN"], `text-anchor="end" ${sans} font-size="16" fill="${y}"`)}`;
       },
     },
-    tent: {
-      name: "Tent", swatch: "repeating-linear-gradient(90deg,#c8142a 0 5px,#ead8bd 5px 10px)",
-      box: { bottom: 945, w: 600, h: 560 },
+    damask: {
+      name: "Damask", swatch: "radial-gradient(circle,#f6f1e7 0 5px,#c9a45c 6px 7px,#a8dcd2 8px)",
+      box: { bottom: 830, w: 470, h: 450 },
       back(c) {
-        const ink = "#3b1a12", yt = (x) => 400 - Math.abs(x - 400) * 0.6;
-        let stripes = "";
-        for (let x = -20; x < W; x += 112) stripes += `<path d="M${x} ${yt(x).toFixed(1)} L${x + 56} ${yt(x + 56).toFixed(1)} L${x + 56} ${H} L${x} ${H}Z"/>`;
-        const head = `${c.who} baked you a`, fs = Math.min(56, 560 / (head.length * 0.42));
-        return `<rect width="${W}" height="${H}" fill="#ead8bd"/>
-          <rect width="${W}" height="${H}" filter="url(#${c.idp}crumple)" opacity=".55" style="mix-blend-mode:multiply"/>
-          <g fill="#c8142a" opacity=".93">${stripes}</g>
-          <rect width="${W}" height="${H}" filter="url(#${c.idp}crumple)" opacity=".3" style="mix-blend-mode:multiply"/>
-          <text x="400" y="84" text-anchor="middle" font-family="Pinyon Script, cursive" font-size="${fs.toFixed(0)}" fill="${ink}">${esc(head)}</text>
-          <text x="400" y="214" text-anchor="middle" font-family="Limelight, Georgia, serif" font-size="128" fill="${ink}">PLAYLIST</text>`;
+        const i = c.idp, gold = `url(#${i}gold)`, teal = "#5d9e92";
+        const X0 = 104, Y0 = 112, X1 = 696, Y1 = 900, r = 34;
+        // a concave-cornered cartouche, the classic patisserie-label shape
+        const frame = (o) => `M${X0 + r - o} ${Y0 + o} H${X1 - r + o} A${r} ${r} 0 0 0 ${X1 - o} ${Y0 + r - o} V${Y1 - r + o} A${r} ${r} 0 0 0 ${X1 - r + o} ${Y1 - o} H${X0 + r - o} A${r} ${r} 0 0 0 ${X0 + o} ${Y1 - r + o} V${Y0 + r - o} A${r} ${r} 0 0 0 ${X0 + r - o} ${Y0 + o}Z`;
+        const scroll = (x, y, sx, sy) => `<g transform="translate(${x} ${y}) scale(${sx} ${sy})" fill="none" stroke="${gold}" stroke-width="4" stroke-linecap="round">
+          <path d="M0 0 C-18 -10 -34 -2 -32 14 C-30 28 -12 28 -10 16 C-8 8 -18 4 -22 10"/><path d="M0 0 C18 -10 34 -2 32 14 C30 28 12 28 10 16 C8 8 18 4 22 10"/>
+          <path d="M-6 -8 C-2 -22 2 -22 6 -8" stroke-width="3"/><circle cx="0" cy="-26" r="4" fill="${gold}" stroke="none"/></g>`;
+        const side = (x, sx) => `<g transform="translate(${x} 506) scale(${sx} 1)" fill="none" stroke="${gold}" stroke-width="3.6" stroke-linecap="round">
+          <path d="M0 -70 C-26 -60 -30 -30 -12 -20 C2 -12 10 -28 -2 -32"/><path d="M0 70 C-26 60 -30 30 -12 20 C2 12 10 28 -2 32"/>
+          <path d="M-14 0 C-28 -8 -28 8 -14 0Z" fill="${gold}" stroke="none"/></g>`;
+        const head = `${c.who} Baked`, fs = Math.min(64, 470 / (head.length * 0.5));
+        return `<defs>
+          <pattern id="${i}dam" width="72" height="96" patternUnits="userSpaceOnUse"><rect width="72" height="96" fill="#a9ddd3"/>
+            <g fill="#cdeee7" opacity=".9"><path d="M36 14 C46 28 52 34 36 48 C20 34 26 28 36 14Z"/><path d="M36 82 C46 68 52 62 36 48 C20 62 26 68 36 82Z"/>
+            <path d="M12 48 C22 38 28 42 36 48 C28 54 22 58 12 48Z"/><path d="M60 48 C50 38 44 42 36 48 C44 54 50 58 60 48Z"/>
+            <circle cx="36" cy="48" r="4"/><path d="M0 0 C6 8 6 10 0 14 C-6 10 -6 8 0 0Z M72 0 C78 8 78 10 72 14 C66 10 66 8 72 0Z M0 82 C6 90 6 92 0 96 C-6 92 -6 90 0 82Z M72 82 C78 90 78 92 72 96 C66 92 66 90 72 82Z"/>
+            <path d="M24 10 C18 4 10 6 12 12 M48 10 C54 4 62 6 60 12 M24 86 C18 92 10 90 12 84 M48 86 C54 92 62 90 60 84" stroke="#cdeee7" stroke-width="2" fill="none"/></g></pattern>
+          <linearGradient id="${i}gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dfa2"/><stop offset=".35" stop-color="#c49a4c"/><stop offset=".6" stop-color="#ead08a"/><stop offset="1" stop-color="#a77d33"/></linearGradient>
+          <radialGradient id="${i}parch" cx=".5" cy=".45" r=".7"><stop offset="0" stop-color="#fbf7ef"/><stop offset="1" stop-color="#efe6d6"/></radialGradient>
+          <filter id="${i}wash" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".02 .03" numOctaves="3" seed="9"/><feColorMatrix values="0 0 0 0 .55  0 0 0 0 .45  0 0 0 0 .35  0 0 0 .12 0"/></filter></defs>
+          <rect width="${W}" height="${H}" fill="#f3c6ca"/>
+          <rect x="18" y="18" width="${W - 36}" height="${H - 36}" fill="url(#${i}dam)"/>
+          <rect x="18" y="18" width="${W - 36}" height="${H - 36}" fill="none" stroke="#e7a9b0" stroke-width="2"/>
+          <path d="${frame(0)}" fill="url(#${i}parch)"/>
+          <path d="${frame(0)}" filter="url(#${i}wash)"/>
+          <path d="${frame(-7)}" fill="none" stroke="${gold}" stroke-width="7"/>
+          <path d="${frame(4)}" fill="none" stroke="${gold}" stroke-width="1.6"/>
+          ${scroll(400, Y0 - 8, 1.5, 1.5)}${scroll(400, Y1 + 8, 1.5, -1.5)}
+          ${side(X0 - 4, 1)}${side(X1 + 4, -1)}
+          <text font-family="UnifrakturMaguntia, Georgia, serif" font-size="${fs.toFixed(0)}" fill="${teal}"><tspan x="168" y="236">${esc(head)}</tspan><tspan x="200" y="${(236 + fs * 1.05).toFixed(0)}">You a Playlist</tspan></text>`;
       },
     },
     velvet: {
@@ -507,8 +556,8 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
   function posterSVG(cake, items, opts = {}) {
     const look = LOOKS[opts.look] || LOOKS.linen, L = layout(cake, look), idp = opts.idp || "p";
     const c = { idp, who: opts.from || "Someone", to: opts.to || "", n: items.filter((i) => i.type === "candle").length, L };
-    let defs = `<radialGradient id="${idp}glow"><stop offset="0" stop-color="#ffc46e" stop-opacity=".75"/><stop offset=".35" stop-color="#ffaa50" stop-opacity=".25"/><stop offset="1" stop-color="#ffa050" stop-opacity="0"/></radialGradient>
-      <linearGradient id="${idp}flame" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffd27a"/><stop offset=".5" stop-color="#ff9d2e"/><stop offset="1" stop-color="#ff6a1a" stop-opacity=".2"/></linearGradient>
+    let defs = `<radialGradient id="${idp}glow"><stop offset="0" stop-color="#fff0c8" stop-opacity=".45"/><stop offset=".35" stop-color="#ffd590" stop-opacity=".14"/><stop offset="1" stop-color="#ffa050" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${idp}foot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a1a10" stop-opacity="0"/><stop offset="1" stop-color="#3a1a10" stop-opacity=".12"/></linearGradient>
       <radialGradient id="${idp}shadow"><stop offset="0" stop-color="#1e0d08" stop-opacity=".42"/><stop offset="1" stop-color="#1e0d08" stop-opacity="0"/></radialGradient>
       <filter id="${idp}rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.62" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter>
       <filter id="${idp}crumple" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".007 .011" numOctaves="4" seed="11" result="t"/><feDiffuseLighting in="t" lighting-color="#fff" surfaceScale="4" result="l"><feDistantLight azimuth="225" elevation="48"/></feDiffuseLighting></filter>
@@ -519,26 +568,33 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
     s += `<image href="${L.href}" x="${L.x.toFixed(1)}" y="${L.y.toFixed(1)}" width="${L.w.toFixed(1)}" height="${L.h.toFixed(1)}" filter="url(#${idp}warm)"/>`;
     if (look.front) s += look.front(c);
     const sorted = items.map((it, i) => ({ it, i })).sort((a, b) => a.it.v - b.it.v);
-    let mid = ""; const wicks = [];
+    let mid = "", flames = "", seat = "", shadows = ""; const wicks = [];
     for (const { it, i } of sorted) {
       const [x, y] = placeOn(L, it.u, it.v);
       if (it.type === "candle") {
         const on = opts.lit ? opts.lit(it) : true;
         const lit = on ? (opts.ignite && opts.ignite(it) ? "ignite" : true) : false;
         const cd = candleSVG(it.style, it.color, x, y, idp, i, lit);
-        defs += cd.defs; mid += `<g class="item candle" data-id="${it.id}">${cd.svg}</g>`;
+        defs += cd.defs; mid += `<g class="item candle${it.draft ? " draft" : ""}" data-id="${it.id}">${cd.svg}</g>`;
+        flames += cd.flame.replace('<g class="flame', `<g data-id="${it.id}" class="flame`);
+        const [bx, by, bw] = cd.base;
+        seat += `<ellipse cx="${bx}" cy="${by + 2}" rx="${(bw * 0.85 + 5).toFixed(1)}" ry="9" fill="url(#${idp}seatg)"/>`;
+        shadows += `<ellipse cx="${bx + 1}" cy="${by - 4.5}" rx="${(bw * 0.5 + 1).toFixed(1)}" ry="1.4" fill="#4a2418" opacity=".18"/>`;
         if (on) wicks.push(cd.wick);
       } else mid += `<g class="item topper" data-id="${it.id}"><g class="body">${topperSVG(it.kind, x, y, idp, i)}</g></g>`;
     }
-    s += `<g class="items">${mid}</g>`;
+    // the cake photo again, only around each candle's foot, so candles sink into the cream instead of floating on top
+    defs += `<radialGradient id="${idp}seatg" cy=".62"><stop offset=".45" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="${idp}seat">${seat}</mask>`;
+    s += `<g class="items">${mid}</g><g pointer-events="none"><image href="${L.href}" x="${L.x.toFixed(1)}" y="${L.y.toFixed(1)}" width="${L.w.toFixed(1)}" height="${L.h.toFixed(1)}" filter="url(#${idp}warm)" mask="url(#${idp}seat)"/>${shadows}</g>`;
     if (opts.dark !== undefined) {
       defs += `<radialGradient id="${idp}hole"><stop offset="0" stop-color="#000" stop-opacity=".8"/><stop offset=".45" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
-        <radialGradient id="${idp}amber"><stop offset="0" stop-color="#ff9a3c" stop-opacity=".4"/><stop offset=".5" stop-color="#ff8a30" stop-opacity=".12"/><stop offset="1" stop-color="#ff8a30" stop-opacity="0"/></radialGradient>
-        <mask id="${idp}mask"><rect width="${W}" height="${H}" fill="#fff"/>${wicks.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y + 40}" r="160" fill="url(#${idp}hole)"/>`).join("")}</mask>`;
+        <radialGradient id="${idp}amber"><stop offset="0" stop-color="#ffb35c" stop-opacity=".3"/><stop offset=".5" stop-color="#ff9a40" stop-opacity=".08"/><stop offset="1" stop-color="#ff8a30" stop-opacity="0"/></radialGradient>
+        <mask id="${idp}mask"><rect width="${W}" height="${H}" fill="#fff"/>${wicks.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y + 50}" r="150" fill="url(#${idp}hole)"/>`).join("")}</mask>`;
       s += `<rect width="${W}" height="${H}" fill="#1b100c" opacity="${opts.dark}" mask="url(#${idp}mask)" pointer-events="none"/>`;
-      if (opts.dark) s += wicks.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y + 30}" r="180" fill="url(#${idp}amber)" style="mix-blend-mode:screen" pointer-events="none"/>`).join("");
+      if (opts.dark) s += wicks.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y + 40}" r="170" fill="url(#${idp}amber)" style="mix-blend-mode:screen" pointer-events="none"/>`).join("");
     }
     s += `<rect width="${W}" height="${H}" filter="url(#${idp}grain)" style="mix-blend-mode:multiply" pointer-events="none"/>`;
+    s += `<g class="flames" pointer-events="none">${flames}</g>`;
     return `<defs>${defs}</defs>${s}`;
   }
 
@@ -605,7 +661,7 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
   }
 
   // ---------- shop ----------
-  $("logo").innerHTML = brushTitle(["Someone Baked", "You a Playlist"], { idp: "logo", size: 112, gap: 118, w: 760, fill: "#1d1515" });
+  $("logo").innerHTML = brushTitle(["Someone Baked", "You a Playlist"], { idp: "logo", size: 112, gap: 118, w: 760, fill: "#b23a36" });
   $("wall").innerHTML = CAKES.map((c, i) => `<button type="button" data-i="${i}" aria-label="Cake ${i + 1}"><img src="${ASSETS}${c.id}.webp" alt="" loading="${i < 8 ? "eager" : "lazy"}"></button>`).join("");
   $("wall").addEventListener("click", (e) => {
     const b = e.target.closest("[data-i]"); if (!b) return;
@@ -623,7 +679,7 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
   function sampleOthers() {
     return [[2, 7, 2], [9, 4, 18], [5, 3, 60], [10, 6, 1440]].map(([ci, n, min], i) => {
       const items = [];
-      for (let j = 0; j < n; j++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * 0.85; items.push({ type: "candle", style: sKeys[Math.floor(rnd() * 5)], color: wKeys[Math.floor(rnd() * 8)], u: Math.cos(a) * r, v: Math.sin(a) * r }); }
+      for (let j = 0; j < n; j++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * 0.85; items.push({ type: "candle", style: sKeys[Math.floor(rnd() * sKeys.length)], color: wKeys[Math.floor(rnd() * wKeys.length)], u: Math.cos(a) * r, v: Math.sin(a) * r }); }
       return { cake: CAKES[ci].id, look: LOOK_KEYS[(i * 2 + 1) % LOOK_KEYS.length], items, at: Date.now() - min * 60000 };
     });
   }
@@ -672,18 +728,29 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 
   // ---------- sheets ----------
   const sheets = ["s-candle", "s-topper", "s-wrap", "s-sent", "s-menu"];
-  const closeSheets = () => { sheets.forEach((s) => ($(s).hidden = true)); stopTaste(); };
+  const closeSheets = () => {
+    if (!$("s-candle").hidden) dropPending();
+    sheets.forEach((s) => ($(s).hidden = true)); stopTaste();
+    if (document.body.classList.contains("panel")) { document.body.classList.remove("panel"); fitPoster(); render(); }
+  };
   document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeSheets));
   sheets.forEach((s) => $(s).addEventListener("click", (e) => { if (e.target === $(s) && s !== "s-menu") closeSheets(); }));
   addEventListener("keydown", (e) => { if (e.key === "Escape") { closeSheets(); setDrawer(false); } });
 
-  // ---------- add a candle: search a song, then pick the candle ----------
-  let draft = null, hits = [], searchT = 0, searchN = 0;
+  // ---------- add a candle: search a song; the candle goes straight onto the cake and changes live as you pick ----------
+  let pending = null, backup = null, hits = [], searchT = 0, searchN = 0, lastPick = { style: "bubble", color: "blush" };
+  function dropPending() {
+    if (pending && !backup) state.items = state.items.filter((i) => i !== pending);
+    if (pending && backup) Object.assign(pending, backup);
+    if (pending) { delete pending.draft; render(); }
+    pending = backup = null;
+  }
+  function openPanel() { document.body.classList.add("panel"); $("s-candle").hidden = false; fitPoster(); render(); }
   function openCandle(edit) {
-    closeSheets(); setDrawer(false);
-    if (edit) { draft = { ...edit, editing: true }; showStep2(); }
-    else { draft = { style: "taper", color: "cream" }; $("c-step1").hidden = false; $("c-step2").hidden = true; $("q").value = ""; hits = []; showResults(); setTimeout(() => $("q").focus(), 30); }
-    $("s-candle").hidden = false;
+    closeSheets(); setDrawer(false); state.sel = null;
+    if (edit) { pending = edit; backup = { style: edit.style, color: edit.color }; pending.draft = true; showStep2(); }
+    else { $("c-step1").hidden = false; $("c-step2").hidden = true; $("q").value = ""; hits = []; showResults(); setTimeout(() => $("q").focus(), 30); }
+    openPanel();
   }
   $("add-candle").addEventListener("click", () => openCandle());
   function showResults(note) {
@@ -705,36 +772,36 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
   });
   $("results").addEventListener("click", (e) => {
     const b = e.target.closest("[data-h]"); if (!b) return;
-    if (b.dataset.h === "raw") Object.assign(draft, { song: $("q").value.trim(), artist: "", art: "", preview: "", url: "" });
-    else { const h = hits[+b.dataset.h]; Object.assign(draft, { song: h.title, artist: h.artist, art: h.art, preview: h.preview, url: h.url }); }
-    showStep2();
+    const song = b.dataset.h === "raw" ? { song: $("q").value.trim(), artist: "", art: "", preview: "", url: "" } : (({ title, artist, art, preview, url }) => ({ song: title, artist, art, preview, url }))(hits[+b.dataset.h]);
+    // find the emptiest spot on the cake top and stand the candle there right away
+    const taken = state.items.map((i) => [i.u, i.v]); let best = null;
+    for (let k = 0; k < 40; k++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * 0.85, u = Math.cos(a) * r, v = Math.sin(a) * r; const d = Math.min(9, ...taken.map(([x, y]) => Math.hypot(x - u, (y - v) * 0.7))); if (!best || d > best.d) best = { u, v, d }; }
+    pending = { id: uid++, type: "candle", ...song, style: lastPick.style, color: lastPick.color, u: best.u, v: best.v, draft: true };
+    backup = null;
+    state.items.push(pending); ignited.add(pending.id);
+    showStep2(); render();
   });
-  const icon = (style, color) => { const c = candleSVG(style, color, 13, 66, "i" + style + color, 0, false); return `<svg viewBox="0 -8 26 80"><defs>${c.defs}</defs>${c.svg}</svg>`; };
+  const icon = (style, color) => { const c = candleSVG(style, color, 13, 158, "i" + style + color, 0, false); return `<svg viewBox="0 0 26 160"><defs><linearGradient id="${"i" + style + color}foot"/></defs><defs>${c.defs}</defs>${c.svg}</svg>`; };
   function showStep2() {
     $("c-step1").hidden = true; $("c-step2").hidden = false;
-    $("c-song").textContent = draft.song + (draft.artist ? " — " + draft.artist : "");
-    $("c-taste").hidden = !draft.preview;
-    $("styles").innerHTML = sKeys.map((k) => `<button type="button" data-s="${k}" aria-pressed="${draft.style === k}">${icon(k, draft.color)}${STYLES[k].name}</button>`).join("");
-    $("swatches").innerHTML = Object.entries(WAX).map(([k, v]) => `<button type="button" data-c="${k}" style="background:${k === "gold" ? "linear-gradient(135deg,#f6e3a4,#c99a3b,#f3d98a)" : v}" aria-pressed="${draft.color === k}" aria-label="${k}"></button>`).join("");
-    $("c-done").textContent = draft.editing ? "Done" : "Stick it in";
+    $("c-song").textContent = pending.song + (pending.artist ? " — " + pending.artist : "");
+    $("c-taste").hidden = !pending.preview;
+    $("styles").innerHTML = sKeys.map((k) => `<button type="button" data-s="${k}" aria-pressed="${pending.style === k}">${icon(k, pending.color)}${STYLES[k].name}</button>`).join("");
+    $("swatches").innerHTML = Object.entries(WAX).map(([k, v]) => `<button type="button" data-c="${k}" style="background:${k === "gold" ? "linear-gradient(135deg,#f6e3a4,#c99a3b,#f3d98a)" : k === "silver" ? "linear-gradient(135deg,#f4f5f7,#a9adb3,#e6e8eb)" : v}" aria-pressed="${pending.color === k}" aria-label="${k}"></button>`).join("");
+    $("c-done").textContent = backup ? "Done" : "Stick it in";
   }
   // a quick listen while choosing
   const audio = new Audio(); audio.preload = "none";
   function stopTaste() { if (state.mode !== "receive") { audio.pause(); $("c-taste").textContent = "▶ Listen"; } }
   $("c-taste").addEventListener("click", () => {
-    if (!audio.paused && audio.src === draft.preview) { stopTaste(); return; }
-    audio.src = draft.preview; audio.currentTime = 0; audio.play().catch(() => {}); $("c-taste").textContent = "❚❚ Stop";
+    if (!audio.paused && audio.src === pending.preview) { stopTaste(); return; }
+    audio.src = pending.preview; audio.currentTime = 0; audio.play().catch(() => {}); $("c-taste").textContent = "❚❚ Stop";
   });
-  $("styles").addEventListener("click", (e) => { const b = e.target.closest("[data-s]"); if (b) { draft.style = b.dataset.s; showStep2(); } });
-  $("swatches").addEventListener("click", (e) => { const b = e.target.closest("[data-c]"); if (b) { draft.color = b.dataset.c; showStep2(); } });
+  $("styles").addEventListener("click", (e) => { const b = e.target.closest("[data-s]"); if (b && pending) { pending.style = b.dataset.s; showStep2(); render(); } });
+  $("swatches").addEventListener("click", (e) => { const b = e.target.closest("[data-c]"); if (b && pending) { pending.color = b.dataset.c; showStep2(); render(); } });
   $("c-done").addEventListener("click", () => {
-    if (draft.editing) { const it = state.items.find((i) => i.id === draft.id); Object.assign(it, { style: draft.style, color: draft.color }); }
-    else {
-      const taken = state.items.map((i) => [i.u, i.v]); let best = null;
-      for (let k = 0; k < 40; k++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * 0.85, u = Math.cos(a) * r, v = Math.sin(a) * r; const d = Math.min(9, ...taken.map(([x, y]) => Math.hypot(x - u, (y - v) * 0.7))); if (!best || d > best.d) best = { u, v, d }; }
-      const it = { id: uid++, type: "candle", song: draft.song, artist: draft.artist, art: draft.art || "", preview: draft.preview || "", url: draft.url || "", style: draft.style, color: draft.color, u: best.u, v: best.v };
-      state.items.push(it); ignited.add(it.id);
-    }
+    if (pending) { delete pending.draft; lastPick = { style: pending.style, color: pending.color }; }
+    pending = backup = null;
     closeSheets(); render();
   });
 
@@ -784,11 +851,11 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 
   function blowOut(it) {
     const g = svg.querySelector(`.candle[data-id="${it.id}"]`); if (!g || it.lit === false) return;
-    const fl = g.querySelector(".flame"); fl.classList.remove("ignite"); fl.classList.add("out");
+    const fl = svg.querySelector(`.flame[data-id="${it.id}"]`); fl.classList.remove("ignite"); fl.classList.add("out");
     const m = fl.getAttribute("transform").match(/translate\(([-\d.]+) ([-\d.]+)\)/), wx = +m[1], wy = +m[2];
     const sm = document.createElementNS("http://www.w3.org/2000/svg", "g"); sm.setAttribute("class", "smoke");
     sm.innerHTML = `<path d="M${wx} ${wy} c-6 -14 8 -22 0 -36 s6 -24 -2 -38"/><path d="M${wx + 2} ${wy} c6 -12 -6 -20 2 -32 s-4 -20 3 -30"/>`;
-    g.appendChild(sm);
+    fl.parentNode.appendChild(sm);
     it.lit = false; order++;
     $("tk-no").textContent = `No. ${order}`; $("tk-song").textContent = it.song; $("tk-artist").textContent = it.artist || "";
     $("tk-art").hidden = !it.art; if (it.art) $("tk-art").src = it.art;
