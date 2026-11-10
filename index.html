@@ -625,9 +625,8 @@ body.panel .stage { padding-right: 420px; }
           <pattern id="${c.idp}ging" width="34" height="34" patternUnits="userSpaceOnUse" patternTransform="translate(0 800) scale(1 .5) skewX(-10)"><rect width="34" height="34" fill="#ecdcd2"/><rect width="17" height="34" fill="#c4474c" opacity=".55"/><rect width="34" height="17" fill="#c4474c" opacity=".55"/></pattern>
           <linearGradient id="${c.idp}cloth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a1410" stop-opacity=".05"/><stop offset="1" stop-color="#3a1410" stop-opacity=".38"/></linearGradient></defs>
           <rect width="${W}" height="${H}" fill="url(#${c.idp}paper)"/>
-          <rect x="58" width="10" height="${H}" fill="#f1e4da" opacity=".35"/><rect x="68" width="3" height="${H}" fill="#9c8076" opacity=".18"/>
           <path d="${cloth}" fill="url(#${c.idp}ging)"/><path d="${cloth}" fill="url(#${c.idp}cloth)"/>
-          ${brushText([head, "You a Playlist"], { idp: c.idp, y: 150, gap: 120, size: 112, w: 690, fill: "#1d1515" })}`;
+          ${brushText([head, "You a Playlist"], { idp: c.idp, y: 150, gap: 120, size: 112, w: 690, fill: red })}`;
       },
     },
   };
