@@ -91,6 +91,9 @@ button:focus-visible { outline: 2px solid var(--brick); outline-offset: 2px; }
 input[type="text"] { font: 16px var(--ui); color: var(--ink); border: 0; background: rgba(255, 255, 255, 0.9); border-radius: 12px; padding: 12px 14px; width: 100%; min-width: 0; }
 input[type="text"]:focus { outline: 2px solid var(--brick); }
 .results { display: grid; gap: 6px; max-height: 44vh; overflow-y: auto; }
+.results .hit { display: flex; gap: 6px; align-items: stretch; }
+.results .hit-play { flex: none; width: 46px; justify-content: center; padding: 0; font-size: 13px; color: var(--brick); }
+.results .hit-play.on { background: #fff; box-shadow: inset 0 0 0 1.5px var(--brick); }
 .results button { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; border: 0; background: rgba(255, 255, 255, 0.8); border-radius: 12px; padding: 8px 10px; font: 15px var(--ui); color: var(--ink); cursor: pointer; }
 .results button:hover { background: #fff; }
 .results .art { width: 40px; height: 40px; border-radius: 6px; flex: none; object-fit: cover; }
@@ -572,15 +575,12 @@ body.panel .stage { padding-right: 420px; }
           <text x="400" y="300" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="168" letter-spacing="2" fill="#8fa862" opacity=".88">PLAYLIST</text>
           <text x="400" y="232" text-anchor="middle" font-family="Pinyon Script, cursive" font-size="${fs.toFixed(0)}" fill="${red}" stroke="#f6e7cf" stroke-width="4" paint-order="stroke" transform="rotate(-3 400 232)">${esc(head)}</text>
           ${arrow("M655 330 C712 384 706 470 622 528", 622, 528, 40)}
-          ${arrow("M104 660 C88 738 150 796 254 804", 254, 804, 120)}
           ${lines(48, 938, 18, [`BAKED BY ${c.who.toUpperCase()}`, `FOR ${(c.to || "YOU").toUpperCase()}`], `${sans} font-weight="500" font-size="13" fill="${red}"`)}
           <text x="752" y="956" text-anchor="end" ${sans} font-size="16" fill="${red}">♡</text>`;
       },
       front(c) {
         const red = "#c0182a";
-        return `<path d="M-10 560 H170 a22 22 0 0 1 22 22 V614 a22 22 0 0 1 -22 22 H-10Z" fill="#f6e7cf" stroke="${red}" stroke-width="2"/>
-          <text x="88" y="612" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="36" fill="${red}">${c.n ? `${c.n} SONG${c.n === 1 ? "" : "S"}` : "FRESH"}</text>
-          <g transform="rotate(-8 598 836)"><ellipse cx="598" cy="836" rx="134" ry="40" fill="#f6e7cf" stroke="${red}" stroke-width="1.6"/>
+        return `<g transform="rotate(-8 598 836)"><ellipse cx="598" cy="836" rx="134" ry="40" fill="#f6e7cf" stroke="${red}" stroke-width="1.6"/>
           ${lines(598, 832, 18, ["IMPOSSIBLE TO PLAY", "JUST ONE"], `text-anchor="middle" ${sans} font-weight="500" font-size="14" fill="${red}"`)}</g>`;
       },
     },
@@ -811,7 +811,7 @@ body.panel .stage { padding-right: 420px; }
   $("add-candle").addEventListener("click", () => openCandle());
   function showResults(note) {
     const raw = $("q").value.trim();
-    $("results").innerHTML = (note ? `<p class="muted">${note}</p>` : "") + hits.map((h, i) => `<button type="button" data-h="${i}">${h.art ? `<img class="art" src="${esc(h.art)}" alt="" loading="lazy">` : `<span class="art" style="background:${ART[(h.title.length + i) % ART.length]}"></span>`}<span>${esc(h.title)}<small>${esc(h.artist)}</small></span></button>`).join("") +
+    $("results").innerHTML = (note ? `<p class="muted">${note}</p>` : "") + hits.map((h, i) => `<div class="hit"><button type="button" data-h="${i}">${h.art ? `<img class="art" src="${esc(h.art)}" alt="" loading="lazy">` : `<span class="art" style="background:${ART[(h.title.length + i) % ART.length]}"></span>`}<span>${esc(h.title)}<small>${esc(h.artist)}</small></span></button>${h.preview ? `<button type="button" class="hit-play" data-p="${i}" aria-label="Listen to ${esc(h.title)}">▶</button>` : ""}</div>`).join("") +
       (raw && !note ? `<button type="button" data-h="raw"><span class="art" style="background:rgba(255,255,255,.6)"></span><span>Use "${esc(raw)}"<small>if it isn't listed</small></span></button>` : "");
   }
   $("q").addEventListener("input", () => {
@@ -827,6 +827,14 @@ body.panel .stage { padding-right: 420px; }
     }, 280);
   });
   $("results").addEventListener("click", (e) => {
+    // ▶ next to a result: a quick listen before choosing
+    const pb = e.target.closest("[data-p]");
+    if (pb) {
+      const src = hits[+pb.dataset.p].preview;
+      if (!audio.paused && audio.src === src) audio.pause();
+      else { audio.src = src; audio.currentTime = 0; audio.play().catch(() => {}); }
+      syncPlay(); return;
+    }
     const b = e.target.closest("[data-h]"); if (!b) return;
     const song = b.dataset.h === "raw" ? { song: $("q").value.trim(), artist: "", art: "", preview: "", url: "" } : (({ title, artist, art, preview, url }) => ({ song: title, artist, art, preview, url }))(hits[+b.dataset.h]);
     // find the emptiest spot on the cake top and stand the candle there right away
@@ -835,7 +843,8 @@ body.panel .stage { padding-right: 420px; }
     pending = { id: uid++, type: "candle", ...song, style: lastPick.style, color: lastPick.color, u: best.u, v: best.v, draft: true };
     backup = null;
     state.items.push(pending); ignited.add(pending.id);
-    showStep2(); render();
+    if (!(song.preview && !audio.paused && audio.src === song.preview)) stopTaste(); // keep it playing if it's the one they were listening to
+    showStep2(); render(); syncPlay();
   });
   const icon = (style, color) => { const c = candleSVG(style, color, 13, 158, "i" + style + color, 0, false); return `<svg viewBox="0 0 26 160"><defs><linearGradient id="${"i" + style + color}foot"/></defs><defs>${c.defs}</defs>${c.svg}</svg>`; };
   function showStep2() {
@@ -848,6 +857,13 @@ body.panel .stage { padding-right: 420px; }
   }
   // a quick listen while choosing
   const audio = new Audio(); audio.preload = "none";
+  // keep every play button in step with what's actually playing
+  function syncPlay() {
+    const on = !audio.paused && audio.src;
+    document.querySelectorAll("#results [data-p]").forEach((b) => { const me = on && hits[+b.dataset.p] && audio.src === hits[+b.dataset.p].preview; b.textContent = me ? "❚❚" : "▶"; b.classList.toggle("on", !!me); });
+    if (pending) $("c-taste").textContent = on && audio.src === pending.preview ? "❚❚ Stop" : "▶ Listen";
+  }
+  audio.addEventListener("ended", syncPlay); audio.addEventListener("pause", syncPlay); audio.addEventListener("play", syncPlay);
   function stopTaste() { if (state.mode !== "receive") { audio.pause(); $("c-taste").textContent = "▶ Listen"; } }
   $("c-taste").addEventListener("click", () => {
     if (!audio.paused && audio.src === pending.preview) { stopTaste(); return; }
