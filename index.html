@@ -1315,6 +1315,8 @@ body.panel .stage { padding-right: 420px; }
       $("shop-note").textContent = "That cake couldn't be found. Maybe it was eaten already. Bake a new one?"; $("shop-note").hidden = false;
     }
   }
+  // count the visit (anonymously); a beacon never holds up the page
+  try { navigator.sendBeacon && navigator.sendBeacon("/api/hit", ""); } catch {}
   const shared = location.pathname.match(/^\/c\/([A-Za-z0-9]{6,16})\/?$/);
   if (shared) openShared(shared[1]); else setMode("shop");
 })();

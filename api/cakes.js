@@ -11,6 +11,7 @@
 import { put, get, del } from "@vercel/blob";
 import { randomBytes } from "node:crypto";
 import { cleanCake, publicView } from "../lib/cake.js";
+import { redis, K, songKey } from "../lib/stats.js";
 
 export const MELT_DAYS = 7;
 const MELT_MS = MELT_DAYS * 864e5;
@@ -38,6 +39,7 @@ export default async function handler(req, res) {
       put(`shells/${id}.json`, JSON.stringify({ ...shown, to: cake.to, from: cake.from }), OPTS),
       put(`recent/${String(9e15 - at).padStart(16, "0")}-${id}.json`, JSON.stringify(shown), OPTS),
     ]);
+    await redis([["INCR", K.baked], ...cake.items.filter((i) => i.type === "candle").map((c) => ["ZINCRBY", K.songs, 1, songKey(c)])]);
     return res.status(201).json({ id, meltDays: MELT_DAYS });
   }
   if (req.method === "GET") {
@@ -57,6 +59,7 @@ export default async function handler(req, res) {
         const opened = { ...cake, melt, openedAt: now };
         await put(`kept/${id}.json`, JSON.stringify(opened), { ...OPTS, allowOverwrite: true });
         await del(`cakes/${id}.json`).catch(() => {});
+        await redis([["INCR", K.opened]]);
         return res.status(200).json(opened);
       }
       // past its time: the TTL may not have swept it yet, so remove the songs now
