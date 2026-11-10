@@ -121,7 +121,7 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 .pair .btn { flex: 1; font-size: 15px; padding: 12px; }
 /* the playlist at the end: album art you tap to play, the playing song keeps its progress bar */
 .menu-kicker { margin: 0 0 2px; font: 600 20px var(--hand); color: var(--brick); }
-.menu { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 46vh; overflow-y: auto; }
+.menu { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 42vh; overflow-y: auto; }
 .menu li { display: grid; grid-template-columns: 22px 54px 1fr auto; gap: 0 12px; align-items: center; padding: 8px 6px; border-radius: 14px; transition: background .2s; }
 .menu li.on { background: rgba(255, 255, 255, 0.6); }
 .menu .n { font: 600 20px var(--hand); color: var(--brick); text-align: center; }
@@ -165,16 +165,30 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 @media (prefers-reduced-motion: reduce) { .invite button, .invite { transition: none; } .invite p { animation: none; } }
 .recv-hint.long { white-space: normal; width: min(88vw, 520px); text-align: center; line-height: 1.15; }
 .recv-hint { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 18px); left: 50%; translate: -50% 0; color: #ead6c8; font-family: var(--hand); font-size: 26px; z-index: 3; white-space: nowrap; pointer-events: none; transition: opacity 0.6s; }
-.ticket { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); translate: -50% 0; width: min(330px, calc(100% - 32px)); padding: 14px 18px; z-index: 4; display: grid; gap: 4px; }
-.ticket:has(.tk-art:not([hidden])) { padding-right: 82px; }
-.ticket .no { font-family: var(--hand); font-size: 20px; color: var(--brick); line-height: 1; }
-.ticket b { font-weight: 500; font-size: 17px; }
-.ticket .bar { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--soft); font-variant-numeric: tabular-nums; }
+/* the player: a slim bar over the cake that opens into the whole playlist */
+.player { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); translate: -50% 0; width: min(440px, calc(100% - 24px)); z-index: 4; padding: 10px 12px; border-radius: 20px; display: grid; gap: 10px; user-select: none; -webkit-user-select: none; }
+.ticket { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "art text play" "bar bar bar" "vol vol open"; gap: 6px 12px; align-items: center; }
+.ticket .tk-art { grid-area: art; width: 46px; height: 46px; border-radius: 8px; object-fit: cover; }
+.ticket .tk-text { grid-area: text; min-width: 0; display: grid; line-height: 1.2; }
+.ticket .no { font-family: var(--hand); font-size: 17px; color: var(--brick); line-height: 1; }
+.ticket b { font-weight: 500; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ticket .tk-artist { font-size: 12.5px; color: var(--soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-btn { grid-area: play; width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--brick); color: #fff; font-size: 13px; cursor: pointer; display: grid; place-items: center; }
+.tk-btn:disabled { opacity: .35; cursor: default; }
+.tk-btn.small { width: 28px; height: 28px; background: transparent; color: var(--ink); font-size: 14px; }
+.ticket .bar { grid-area: bar; display: flex; gap: 8px; align-items: center; font-size: 11.5px; color: var(--soft); font-variant-numeric: tabular-nums; }
 .ticket .bar i { flex: 1; height: 3px; background: rgba(0, 0, 0, 0.12); position: relative; overflow: hidden; border-radius: 2px; }
 .ticket .bar i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); background: var(--brick); }
+.vol { grid-area: vol; display: flex; align-items: center; gap: 4px; }
+.vol input { width: 92px; accent-color: var(--brick); }
+.pl-open { grid-area: open; justify-self: end; border: 0; border-radius: 999px; padding: 6px 12px; background: rgba(255, 255, 255, .75); font: 500 12.5px var(--ui); color: var(--ink); cursor: pointer; }
+.pl-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.pl-head h3 { margin: 0; }
+.pl-fold { border: 0; width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, .75); font-size: 18px; line-height: 1; cursor: pointer; color: var(--ink); }
+.pl-full { display: grid; gap: 10px; padding: 6px 4px 2px; }
+.pl-full:not([hidden]) + .ticket { display: none; }
 .mic { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); left: max(14px, env(safe-area-inset-left, 0px)); z-index: 3; font: 500 13px var(--ui); border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(246, 240, 236, 0.9); cursor: pointer; color: var(--ink); }
 .mic.on { background: #c25b58; color: #fff; }
-.tk-art { position: absolute; right: 16px; top: 14px; width: 52px; height: 52px; border-radius: 8px; object-fit: cover; }
 .exit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); right: max(14px, env(safe-area-inset-right, 0px)); z-index: 3; font: 500 13px var(--ui); border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(246, 240, 236, 0.9); cursor: pointer; }
 
 .flame .fl { transform-box: fill-box; transform-origin: 50% 100%; animation: flick 2.4s ease-in-out infinite; }
@@ -261,12 +275,24 @@ body.panel .stage { padding-right: 420px; }
   <div class="recv-hint" id="recv-hint">Tap a candle to blow it out</div>
   <button type="button" class="exit" id="exit">‹ Keep decorating</button>
   <button type="button" class="mic" id="mic">Blow with your mic</button>
-  <div class="ticket glass" id="ticket" hidden>
-    <img class="tk-art" id="tk-art" alt="" hidden>
-    <span class="no" id="tk-no"></span>
-    <b id="tk-song"></b>
-    <span id="tk-artist" style="color:var(--soft)"></span>
-    <div class="bar"><span>▶</span><i id="tk-bar"></i><span id="tk-time">0:00</span></div>
+  <div class="player glass" id="player" hidden>
+    <div class="pl-full" id="pl-full" hidden>
+      <div class="pl-head">
+        <div><p class="menu-kicker">your playlist</p><h3 id="menu-title"></h3></div>
+        <button type="button" class="pl-fold" id="pl-collapse" aria-label="Minimize the playlist">⌄</button>
+      </div>
+      <ol class="menu" id="menu"></ol>
+      <p class="menu-open">Tap a cover to play · open the full song in your app</p>
+      <div class="pair"><button type="button" class="btn" id="relight">Light them again</button><button type="button" class="btn red" id="bake">Bake one back</button></div>
+    </div>
+    <div class="ticket" id="ticket">
+      <img class="tk-art" id="tk-art" alt="" hidden>
+      <div class="tk-text"><span class="no" id="tk-no"></span><b id="tk-song"></b><span class="tk-artist" id="tk-artist"></span></div>
+      <button type="button" class="tk-btn" id="tk-play" aria-label="Play or pause">▶</button>
+      <div class="bar"><i id="tk-bar"></i><span id="tk-time">0:00</span></div>
+      <div class="vol"><button type="button" class="tk-btn small" id="tk-mute" aria-label="Mute">🔊</button><input type="range" id="tk-vol" min="0" max="1" step="0.05" value="1" aria-label="Volume"></div>
+      <button type="button" class="pl-open" id="pl-expand" hidden aria-label="Show the playlist">playlist ⌃</button>
+    </div>
   </div>
 </div>
 
@@ -320,15 +346,6 @@ body.panel .stage { padding-right: 420px; }
   </div>
 </div>
 
-<div class="sheet" id="s-menu" hidden>
-  <div class="box glass">
-    <p class="menu-kicker">your playlist</p>
-    <h3 id="menu-title"></h3>
-    <ol class="menu" id="menu"></ol>
-    <p class="menu-open">Tap a cover to play · open the full song in your app</p>
-    <div class="pair"><button type="button" class="btn" id="relight">Light them again</button><button type="button" class="btn red" id="bake">Bake one back</button></div>
-  </div>
-</div>
 
 <script>
 (() => {
@@ -813,14 +830,14 @@ body.panel .stage { padding-right: 420px; }
   $("sel-edit").addEventListener("click", () => { const it = state.items.find((i) => i.id === state.sel); if (it) openCandle(it); });
 
   // ---------- sheets ----------
-  const sheets = ["s-candle", "s-topper", "s-wrap", "s-sent", "s-menu"];
+  const sheets = ["s-candle", "s-topper", "s-wrap", "s-sent"];
   const closeSheets = () => {
     if (!$("s-candle").hidden) dropPending();
     sheets.forEach((s) => ($(s).hidden = true)); stopTaste();
     if (document.body.classList.contains("panel")) { document.body.classList.remove("panel"); fitPoster(); render(); }
   };
   document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeSheets));
-  sheets.forEach((s) => $(s).addEventListener("click", (e) => { if (e.target === $(s) && s !== "s-menu") closeSheets(); }));
+  sheets.forEach((s) => $(s).addEventListener("click", (e) => { if (e.target === $(s)) closeSheets(); }));
   addEventListener("keydown", (e) => { if (e.key === "Escape") { closeSheets(); setDrawer(false); } });
 
   // ---------- add a candle: search a song; the candle goes straight onto the cake and changes live as you pick ----------
@@ -945,7 +962,7 @@ body.panel .stage { padding-right: 420px; }
   function receive() {
     closeSheets(); order = 0;
     state.items.forEach((i) => { if (i.type === "candle") { i.lit = !state.melted; if (!state.melted) ignited.add(i.id); } });
-    $("ticket").hidden = true; $("recv-hint").style.opacity = 1;
+    $("player").hidden = true; $("pl-full").hidden = true; $("pl-expand").hidden = true; $("recv-hint").style.opacity = 1;
     $("recv-hint").textContent = state.melted ? "The candles burned down before anyone came to blow them out." : "Tap a candle to blow it out";
     $("recv-hint").classList.toggle("long", state.melted);
     $("mic").hidden = state.melted || !hasMic;
@@ -973,11 +990,8 @@ body.panel .stage { padding-right: 420px; }
     sm.innerHTML = `<path d="M${wx} ${wy} c-6 -14 8 -22 0 -36 s6 -24 -2 -38"/><path d="M${wx + 2} ${wy} c6 -12 -6 -20 2 -32 s-4 -20 3 -30"/>`;
     fl.parentNode.appendChild(sm);
     it.lit = false; order++;
-    $("tk-no").textContent = `No. ${order}`; $("tk-song").textContent = it.song; $("tk-artist").textContent = it.artist || "";
-    $("tk-art").hidden = !it.art; if (it.art) $("tk-art").src = it.art;
-    $("tk-time").textContent = it.preview ? "0:00" : "no preview"; $("tk-bar").style.setProperty("--p", "0%");
-    $("ticket").hidden = false; $("recv-hint").style.opacity = 0;
-    playing = it;
+    playing = it; setMini(it, `No. ${order}`);
+    $("player").hidden = false; $("recv-hint").style.opacity = 0;
     if (it.preview) { audio.src = it.preview; audio.currentTime = 0; audio.play().catch(() => {}); } else audio.pause();
     const left = state.items.filter((i) => i.type === "candle" && i.lit !== false).length;
     setTimeout(() => { if (state.mode === "receive") render(); if (!left) setTimeout(showMenu, 1800); }, 1400);
@@ -993,6 +1007,31 @@ body.panel .stage { padding-right: 420px; }
     $("tk-bar").style.setProperty("--p", (t / d) * 100 + "%");
     $("tk-time").textContent = `0:${String(Math.floor(t)).padStart(2, "0")} / 0:${String(Math.round(d)).padStart(2, "0")}`;
     syncMenu();
+  });
+  // the mini bar: what's playing now
+  function setMini(it, no) {
+    $("tk-no").textContent = no; $("tk-song").textContent = it.song; $("tk-artist").textContent = it.artist || "";
+    $("tk-art").hidden = !it.art; if (it.art) $("tk-art").src = it.art;
+    $("tk-time").textContent = it.preview ? "0:00" : "no preview"; $("tk-bar").style.setProperty("--p", "0%");
+    $("tk-play").disabled = !it.preview;
+  }
+  $("tk-play").addEventListener("click", () => {
+    if (!playing || !playing.preview) return;
+    if (!audio.paused) audio.pause();
+    else { if (audio.src !== playing.preview) { audio.src = playing.preview; audio.currentTime = 0; } audio.play().catch(() => {}); }
+  });
+  $("pl-collapse").addEventListener("click", () => { $("pl-full").hidden = true; syncMenu(); });
+  $("pl-expand").addEventListener("click", () => { $("pl-full").hidden = false; syncMenu(); });
+  // volume: phones like iPhone ignore page volume, so there only mute is offered
+  let lastVol = 1;
+  const volWorks = (() => { const a = new Audio(); try { a.volume = 0.5; } catch {} return a.volume === 0.5; })();
+  $("tk-vol").hidden = !volWorks;
+  const showVol = () => ($("tk-mute").textContent = audio.muted || audio.volume === 0 ? "🔈" : "🔊");
+  $("tk-vol").addEventListener("input", (e) => { audio.volume = +e.target.value; audio.muted = false; if (audio.volume > 0) lastVol = audio.volume; showVol(); });
+  $("tk-mute").addEventListener("click", () => {
+    if (volWorks) { const off = audio.volume > 0 && !audio.muted; audio.muted = false; audio.volume = off ? 0 : lastVol || 1; $("tk-vol").value = audio.volume; }
+    else audio.muted = !audio.muted;
+    showVol();
   });
   // small "open in" marks for each service
   const SVC = {
@@ -1016,12 +1055,17 @@ body.panel .stage { padding-right: 420px; }
       </li>`;
     }).join("");
     $("bake").textContent = state.shared ? "Bake one back" : "Bake another";
-    $("ticket").hidden = true; $("s-menu").hidden = false;
+    $("player").hidden = false; $("pl-full").hidden = false; $("pl-expand").hidden = false;
     syncMenu();
   }
   // the playlist mirrors whatever is playing, and carries on to the next song when one ends
   function syncMenu() {
-    if ($("s-menu").hidden) return;
+    const cs0 = state.items.filter((i) => i.type === "candle");
+    $("tk-play").textContent = playing && !audio.paused ? "❚❚" : "▶";
+    if ($("pl-expand").hidden) return;
+    // once it's a playlist, the mini bar shows the song's place in it, not the order the candles went out
+    if (playing && $("tk-song").textContent !== playing.song) setMini(playing, "");
+    if (playing) $("tk-no").textContent = `No. ${cs0.indexOf(playing) + 1}`;
     const cs = state.items.filter((i) => i.type === "candle"), at = cs.indexOf(playing), on = !!playing && !audio.paused;
     $("menu").querySelectorAll("li").forEach((li) => {
       const me = +li.dataset.i === at;
@@ -1040,7 +1084,7 @@ body.panel .stage { padding-right: 420px; }
   });
   audio.addEventListener("play", syncMenu); audio.addEventListener("pause", syncMenu);
   audio.addEventListener("ended", () => {
-    if ($("s-menu").hidden || state.mode !== "receive") return;
+    if ($("pl-expand").hidden || state.mode !== "receive") return;
     const cs = state.items.filter((i) => i.type === "candle"), from = cs.indexOf(playing);
     const next = cs.slice(from + 1).find((i) => i.preview);
     if (next) { playing = next; audio.src = next.preview; audio.currentTime = 0; audio.play().catch(() => {}); }
