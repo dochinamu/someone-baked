@@ -141,7 +141,7 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 .menu .t small { display: block; font-size: 12.5px; color: var(--soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .menu .prog { display: none; grid-column: 3 / -1; align-items: center; gap: 8px; margin-top: 6px; font: 11px var(--ui); color: var(--soft); font-variant-numeric: tabular-nums; }
 .menu li.on .prog { display: flex; }
-.menu .prog i { flex: 1; height: 3px; border-radius: 2px; background: rgba(0, 0, 0, .12); position: relative; overflow: hidden; }
+.menu .prog i { flex: 1; height: 3px; border-radius: 2px; background: rgba(0, 0, 0, .12); position: relative; }
 .menu .prog i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); background: var(--brick); }
 .menu .go { display: flex; gap: 6px; }
 .menu .go a { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: rgba(255, 255, 255, .85); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); transition: transform .15s; }
@@ -187,19 +187,22 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 #pl-expand.nudge { animation: nudge 1.2s ease-in-out 4; background: rgba(255, 255, 255, .8); color: var(--brick); }
 @keyframes nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 .ticket .bar { grid-area: bar; display: flex; gap: 8px; align-items: center; font-size: 10.5px; color: var(--soft); font-variant-numeric: tabular-nums; }
-.ticket .bar i { flex: 1; height: 2.5px; background: rgba(0, 0, 0, 0.12); position: relative; overflow: hidden; border-radius: 2px; }
+.ticket .bar i, .menu .prog i { cursor: pointer; }
+.ticket .bar i::before, .menu .prog i::before { content: ""; position: absolute; inset: -9px 0; }
+.ticket .bar i { flex: 1; height: 2.5px; background: rgba(0, 0, 0, 0.12); position: relative; border-radius: 2px; }
 .ticket .bar i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); background: var(--brick); }
 .vol { grid-area: vol; position: relative; }
 .vol-pop { position: absolute; bottom: calc(100% + 10px); left: 50%; translate: -50% 0; padding: 10px 14px; border-radius: 14px; background: rgba(246, 240, 236, .97); box-shadow: 0 6px 18px rgba(0, 0, 0, .18); }
 .vol-pop input { width: 120px; accent-color: var(--brick); display: block; }
 .pl-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
 .pl-head h3 { margin: 0; }
-.pl-fold { border: 0; width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, .75); font-size: 18px; line-height: 1; cursor: pointer; color: var(--ink); }
+.pl-fold { flex: none; border: 0; padding: 0; width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, .75); cursor: pointer; color: var(--ink); display: grid; place-items: center; }
+.pl-fold svg { width: 18px; height: 18px; display: block; }
 .pl-full { display: grid; gap: 10px; padding: 6px 4px 2px; }
 .pl-full:not([hidden]) + .ticket { display: none; }
-.mic { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); left: max(14px, env(safe-area-inset-left, 0px)); z-index: 3; font: 500 13px var(--ui); border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(246, 240, 236, 0.9); cursor: pointer; color: var(--ink); }
+.mic { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); right: max(14px, env(safe-area-inset-right, 0px)); z-index: 3; font: 500 13px var(--ui); border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(246, 240, 236, 0.9); cursor: pointer; color: var(--ink); }
 .mic.on { background: #c25b58; color: #fff; }
-.exit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); right: max(14px, env(safe-area-inset-right, 0px)); z-index: 3; font: 500 13px var(--ui); border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(246, 240, 236, 0.9); cursor: pointer; }
+.exit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); left: max(14px, env(safe-area-inset-left, 0px)); z-index: 3; font: 500 13px var(--ui); border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(246, 240, 236, 0.9); cursor: pointer; }
 
 .flame .fl { transform-box: fill-box; transform-origin: 50% 100%; animation: flick 2.4s ease-in-out infinite; }
 .flame .glow { animation: breathe 3s ease-in-out infinite; }
@@ -283,17 +286,17 @@ body.panel .stage { padding-right: 420px; }
 
 <div id="recv" hidden>
   <div class="recv-hint" id="recv-hint">Tap a candle to blow it out</div>
-  <button type="button" class="exit" id="exit">‹ Keep decorating</button>
+  <button type="button" class="exit" id="exit">‹ Back</button>
+  <button type="button" class="mic relight" id="relight" hidden>Light them again</button>
   <button type="button" class="mic" id="mic">Blow with your mic</button>
   <div class="player glass" id="player" hidden>
     <div class="pl-full" id="pl-full" hidden>
       <div class="pl-head">
         <div><p class="menu-kicker">your playlist</p><h3 id="menu-title"></h3></div>
-        <button type="button" class="pl-fold" id="pl-collapse" aria-label="Minimize the playlist">⌄</button>
+        <button type="button" class="pl-fold" id="pl-collapse" aria-label="Minimize the playlist"><svg viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
       <ol class="menu" id="menu"></ol>
       <p class="menu-open">Tap a cover to play · open the full song in your app</p>
-      <div class="pair"><button type="button" class="btn" id="relight">Light them again</button><button type="button" class="btn red" id="bake">Bake one back</button></div>
     </div>
     <div class="ticket" id="ticket">
       <img class="tk-art" id="tk-art" alt="" hidden>
@@ -981,7 +984,8 @@ body.panel .stage { padding-right: 420px; }
     $("recv-hint").textContent = state.melted ? "The candles burned down before anyone came to blow them out." : "Tap a candle to blow it out";
     $("recv-hint").classList.toggle("long", state.melted);
     $("mic").hidden = state.melted || !hasMic;
-    $("exit").textContent = state.shared ? "Bake one back" : "‹ Back";
+    $("exit").textContent = state.shared ? "Bake one too" : "‹ Back";
+    $("relight").hidden = true;
     setMode("receive");
   }
   $("preview").addEventListener("click", () => { history.pushState({ preview: true }, ""); showInvite(inviteFromState({ at: Date.now() })); });
@@ -995,7 +999,6 @@ body.panel .stage { padding-right: 420px; }
   $("inv-back").addEventListener("click", leavePreview);
   const startOver = () => { closeSheets(); stopMic(); state.link = ""; state.items = []; state.to = state.from = ""; state.shared = false; state.melt = 0; state.melted = false; history.replaceState(null, "", "/"); setMode("shop"); };
   $("exit").addEventListener("click", () => (state.shared ? startOver() : leavePreview()));
-  $("bake").addEventListener("click", startOver);
 
   function blowOut(it) {
     const g = svg.querySelector(`.candle[data-id="${it.id}"]`); if (!g || it.lit === false) return;
@@ -1035,6 +1038,19 @@ body.panel .stage { padding-right: 420px; }
     if (!audio.paused) audio.pause();
     else { if (audio.src !== playing.preview) { audio.src = playing.preview; audio.currentTime = 0; } audio.play().catch(() => {}); }
   });
+  function seek(e, it) {
+    if (!it || !it.preview) return;
+    const r = e.currentTarget.getBoundingClientRect(), f = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    const go = () => { audio.currentTime = f * (audio.duration || 30); audio.play().catch(() => {}); };
+    if (audio.src !== it.preview) { playing = it; audio.src = it.preview; audio.addEventListener("loadedmetadata", go, { once: true }); audio.load(); }
+    else go();
+  }
+  $("tk-bar").addEventListener("click", (e) => seek(e, playing));
+  $("menu").addEventListener("click", (e) => {
+    const bar = e.target.closest(".prog i"); if (!bar) return;
+    const li = bar.closest("li"), it = state.items.filter((i) => i.type === "candle")[+li.dataset.i];
+    seek({ currentTarget: bar, clientX: e.clientX }, it);
+  });
   $("pl-collapse").addEventListener("click", () => { $("pl-full").hidden = true; syncMenu(); });
   $("pl-expand").addEventListener("click", () => { $("pl-expand").classList.remove("nudge"); $("pl-full").hidden = false; syncMenu(); });
   function showPlayer() { if (!$("player").hidden) return; $("player").hidden = false; document.body.classList.add("has-player"); fitPoster(); }
@@ -1069,7 +1085,8 @@ body.panel .stage { padding-right: 420px; }
         <span class="prog"><i></i><b class="tm">0:00</b></span>
       </li>`;
     }).join("");
-    $("bake").textContent = state.shared ? "Bake one back" : "Bake another";
+    // every candle is out: the mic has nothing left to do, so the right-hand button relights them
+    stopMic(); $("mic").hidden = true; $("relight").hidden = state.melted;
     // the playlist is ready, but it waits to be opened instead of jumping over the cake
     showPlayer(); $("pl-expand").hidden = false; $("pl-expand").classList.add("nudge");
     $("pl-expand").setAttribute("aria-label", "Your playlist is ready: show it");
@@ -1291,7 +1308,7 @@ body.panel .stage { padding-right: 420px; }
       state.look = LOOKS[c.look] ? c.look : "linen";
       state.to = c.to || ""; state.from = c.from || "";
       state.items = c.items.map((it) => ({ ...it, id: uid++ }));
-      state.shared = true; $("exit").textContent = "Bake one back";
+      state.shared = true; $("exit").textContent = "Bake one too";
       $("loading").hidden = true; markLook(); showInvite(inviteFromState({ at: c.at, openedAt: c.openedAt }));
     } catch {
       $("loading").hidden = true; history.replaceState(null, "", "/"); setMode("shop");
