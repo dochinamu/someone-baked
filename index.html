@@ -361,7 +361,7 @@ body.panel .stage { padding-right: 420px; }
   <div class="box glass">
     <button type="button" class="x" data-close aria-label="Close">×</button>
     <h3 id="sent-title"></h3>
-    <p>The songs stay a secret until they blow the candles out. The candles start burning now: if the link sits unopened for 7 days, they burn down and the songs go with them.</p>
+    <p id="sent-note-story">The candles are lit the moment you send it, and they keep burning until someone comes to blow them out. If no one comes within 7 days, they burn all the way down and the songs go with them.</p>
     <div class="link" id="link" hidden></div>
     <p class="muted" id="sent-note" hidden></p>
     <div class="pair"><button type="button" class="btn" id="copy">Copy link</button><button type="button" class="btn" id="share">Share…</button></div>
@@ -971,7 +971,10 @@ body.panel .stage { padding-right: 420px; }
     catch { note = "Couldn't reach the oven, so this is a preview only. Try again in a moment."; }
     btn.disabled = false; btn.textContent = "Wrap it up";
     closeSheets();
-    $("sent-title").textContent = `Your playlist for ${state.to || "them"} is out of the oven.`;
+    $("sent-title").textContent = KO ? `${state.to || "그 사람"}에게 보낼 플레이리스트가 다 구워졌어요.` : `Your playlist for ${state.to || "them"} is out of the oven.`;
+    $("sent-note-story").textContent = KO
+      ? "보내는 순간 초에 불이 붙어요. 누군가 와서 불어 끌 때까지 초는 천천히 타들어 가고, 일주일 안에 아무도 오지 않으면 다 타 버려 노래도 함께 사라져요."
+      : "The candles are lit the moment you send it, and they keep burning until someone comes to blow them out. If no one comes within 7 days, they burn all the way down and the songs go with them.";
     $("link").textContent = link; $("link").hidden = true; $("copy").textContent = "Copy link"; $("copy").hidden = !link; $("share").hidden = !link || !navigator.share;
     $("sent-note").textContent = note; $("sent-note").hidden = !note;
     $("s-sent").hidden = false;
@@ -1304,7 +1307,8 @@ body.panel .stage { padding-right: 420px; }
     const from = (o.from || "Someone").toUpperCase(), to = o.to || "you", d = new Date(o.at || Date.now());
     const nameSize = Math.min(92, 480 / Math.max(3, to.length * 0.5));
     const left = (o.at || Date.now()) + 7 * 864e5 - Date.now();
-    const candles = o.melted ? "BURNED DOWN" : o.openedAt ? "STILL LIT" : left < 864e5 ? `MELT IN ${Math.max(1, Math.ceil(left / 36e5))} HOUR${left <= 36e5 ? "" : "S"}` : `MELT IN ${Math.ceil(left / 864e5)} DAYS`;
+    // the candles were lit when the cake was sent; this says how long they have left to burn
+    const candles = o.melted ? "BURNED DOWN" : o.openedAt ? "WAITING FOR YOU" : left < 864e5 ? `LIT · ${Math.max(1, Math.ceil(left / 36e5))} HOUR${left <= 36e5 ? "" : "S"} LEFT` : `LIT · ${Math.ceil(left / 864e5)} DAYS LEFT`;
     const caps = `font-family="Cinzel, 'Cormorant Garamond', Gowun Batang, serif" font-weight="500" fill="${INK}"`, info = `font-family="Oswald, Do Hyeon, 'Arial Narrow', sans-serif" font-weight="500" font-size="25" fill="${INK}" text-anchor="middle" letter-spacing="1"`;
     return `${laceSVG()}
       <defs><path id="iv-arc" d="M140 300 Q370 140 600 300"/></defs>
