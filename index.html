@@ -203,9 +203,11 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 .pl-fold svg { width: 18px; height: 18px; display: block; }
 .pl-full { display: grid; gap: 10px; padding: 6px 4px 2px; }
 .pl-full:not([hidden]) + .ticket { display: none; }
-.mic { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); right: max(14px, env(safe-area-inset-right, 0px)); z-index: 3; font: 500 13px var(--ui); border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(246, 240, 236, 0.9); cursor: pointer; color: var(--ink); }
+.mic { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); right: max(14px, env(safe-area-inset-right, 0px)); z-index: 3; font: 500 14px var(--ui); border: 0; border-radius: 999px; padding: 10px 16px; background: rgba(246, 240, 236, 0.92); cursor: pointer; color: var(--ink); }
 .mic.on { background: #c25b58; color: #fff; }
-.exit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); left: max(14px, env(safe-area-inset-left, 0px)); z-index: 3; font: 500 13px var(--ui); border: 0; border-radius: 999px; padding: 8px 14px; background: rgba(246, 240, 236, 0.9); cursor: pointer; }
+.exit.lit { background: var(--brick); color: #fff; box-shadow: 0 6px 16px -6px rgba(140, 40, 30, .6); animation: nudge 1.4s ease-in-out 3; }
+.relight { background: #fff; box-shadow: 0 4px 12px -6px rgba(0, 0, 0, .3); }
+.exit { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); left: max(14px, env(safe-area-inset-left, 0px)); z-index: 3; font: 500 14px var(--ui); border: 0; border-radius: 999px; padding: 10px 16px; background: rgba(246, 240, 236, 0.92); cursor: pointer; color: var(--ink); }
 
 .flame .fl { transform-box: fill-box; transform-origin: 50% 100%; animation: flick 2.4s ease-in-out infinite; }
 .flame .glow { animation: breathe 3s ease-in-out infinite; }
@@ -649,8 +651,7 @@ body.panel .stage { padding-right: 420px; }
       },
       front(c) {
         const red = "#c0182a";
-        return `<g transform="rotate(-8 598 836)"><ellipse cx="598" cy="836" rx="134" ry="40" fill="#f6e7cf" stroke="${red}" stroke-width="1.6"/>
-          ${lines(598, 832, 18, ["IMPOSSIBLE TO PLAY", "JUST ONE"], `text-anchor="middle" ${sans} font-weight="500" font-size="14" fill="${red}"`)}</g>`;
+        return "";
       },
     },
     gingham: {
@@ -728,6 +729,11 @@ body.panel .stage { padding-right: 420px; }
 
   // ---------- server (falls back to local sample data when there is no API, e.g. in a preview) ----------
   const country = /^ko\b/i.test(navigator.language || "") ? "KR" : "US";
+  // the receiving side's few words, in Korean for Korean browsers
+  const KO = country === "KR";
+  const TXT = KO
+    ? { bake: "나도 만들기", back: "‹ 돌아가기", relight: "다시 불 켜기", mic: "마이크로 불기", listening: "듣고 있어요… 후!", micOff: "마이크를 쓸 수 없어요. 초를 눌러 주세요.", hint: "초를 눌러 불을 꺼 보세요", melted: "아무도 불을 끄러 오지 않아서 초가 다 타 버렸어요." }
+    : { bake: "Bake one too", back: "‹ Back", relight: "Light them again", mic: "Blow with your mic", listening: "Listening… blow!", micOff: "Mic is off. Tap the candles instead.", hint: "Tap a candle to blow it out", melted: "The candles burned down before anyone came to blow them out." };
   async function api(path, opts = {}, ms = 6000) {
     const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
     try {
@@ -986,10 +992,10 @@ body.panel .stage { padding-right: 420px; }
     state.items.forEach((i) => { if (i.type === "candle") { i.lit = !state.melted; if (!state.melted) ignited.add(i.id); } });
     $("player").hidden = true; $("pl-full").hidden = true; $("pl-expand").hidden = true; $("pl-expand").classList.remove("nudge"); $("vol-pop").hidden = true;
     document.body.classList.remove("has-player"); $("recv-hint").style.opacity = 1;
-    $("recv-hint").textContent = state.melted ? "The candles burned down before anyone came to blow them out." : "Tap a candle to blow it out";
+    $("recv-hint").textContent = state.melted ? TXT.melted : TXT.hint;
     $("recv-hint").classList.toggle("long", state.melted);
     $("mic").hidden = state.melted || !hasMic;
-    $("exit").textContent = state.shared ? "Bake one too" : "‹ Back";
+    $("exit").textContent = state.shared ? TXT.bake : TXT.back; $("exit").classList.remove("lit");
     $("relight").hidden = true;
     setMode("receive");
   }
@@ -1108,6 +1114,7 @@ body.panel .stage { padding-right: 420px; }
     }).join("");
     // every candle is out: the mic has nothing left to do, so the right-hand button relights them
     stopMic(); $("mic").hidden = true; $("relight").hidden = state.melted;
+    if (state.shared) $("exit").classList.add("lit");
     // the playlist is ready, but it waits to be opened instead of jumping over the cake
     showPlayer(); $("pl-expand").hidden = false; $("pl-expand").classList.add("nudge");
     $("pl-expand").setAttribute("aria-label", "Your playlist is ready: show it");
@@ -1157,7 +1164,7 @@ body.panel .stage { padding-right: 420px; }
       const src = ctx.createMediaStreamSource(stream), an = ctx.createAnalyser(); an.fftSize = 1024; an.smoothingTimeConstant = 0.2; src.connect(an);
       const bins = new Uint8Array(an.frequencyBinCount), hiBin = Math.ceil(1000 / (ctx.sampleRate / an.fftSize));
       mic = { stream, ctx, raf: 0, since: 0, cool: 0 };
-      $("mic").classList.add("on"); $("mic").textContent = "Listening… blow!";
+      $("mic").classList.add("on"); $("mic").textContent = TXT.listening;
       const tick = (t) => {
         an.getByteFrequencyData(bins);
         let low = 0; for (let i = 1; i < hiBin; i++) low += bins[i]; low /= hiBin - 1;
@@ -1172,13 +1179,14 @@ body.panel .stage { padding-right: 420px; }
         mic.raf = requestAnimationFrame(tick);
       };
       mic.raf = requestAnimationFrame(tick);
-    } catch { $("mic").textContent = "Mic is off. Tap the candles instead."; $("mic").disabled = true; }
+    } catch { $("mic").textContent = TXT.micOff; $("mic").disabled = true; }
   }
   function stopMic() {
     if (!mic) return; cancelAnimationFrame(mic.raf); mic.stream.getTracks().forEach((t) => t.stop()); mic.ctx.close(); mic = null;
-    $("mic").classList.remove("on"); $("mic").textContent = "Blow with your mic"; $("mic").disabled = false;
+    $("mic").classList.remove("on"); $("mic").textContent = TXT.mic; $("mic").disabled = false;
   }
   const hasMic = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  $("mic").textContent = TXT.mic; $("relight").textContent = TXT.relight; $("recv-hint").textContent = TXT.hint;
   $("mic").hidden = !hasMic;
   $("mic").addEventListener("click", () => (mic ? stopMic() : startMic()));
 
@@ -1330,7 +1338,7 @@ body.panel .stage { padding-right: 420px; }
       state.look = LOOKS[c.look] ? c.look : "linen";
       state.to = c.to || ""; state.from = c.from || "";
       state.items = c.items.map((it) => ({ ...it, id: uid++ }));
-      state.shared = true; $("exit").textContent = "Bake one too";
+      state.shared = true; $("exit").textContent = TXT.bake;
       $("loading").hidden = true; markLook(); showInvite(inviteFromState({ at: c.at, openedAt: c.openedAt }));
     } catch {
       $("loading").hidden = true; history.replaceState(null, "", "/"); setMode("shop");
