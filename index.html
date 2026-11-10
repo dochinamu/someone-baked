@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#cdb5ab">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&family=UnifrakturMaguntia&family=Nanum+Brush+Script&family=Yellowtail&family=Pinyon+Script&family=Gloock&family=Limelight&family=Anton&family=Caveat:wght@500;600&family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&family=UnifrakturMaguntia&family=Nanum+Brush+Script&family=Yellowtail&family=Pinyon+Script&family=Gloock&family=Limelight&family=Anton&family=Caveat:wght@500;600&family=Cormorant+Garamond:wght@600;700&family=Cinzel:wght@500;600&family=Bellefair&family=Oswald:wght@500&family=IBM+Plex+Sans:wght@400;500&display=swap">
 <style>
 /* layout: shop (a wall of cut-out cakes) -> poster editor (poster centre, dock right, drawer left)
    -> receive (same poster, lights off). Everything sits in a dusky rose room. */
@@ -120,6 +120,16 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 .menu .go { display: flex; gap: 10px; flex-wrap: wrap; width: 100%; padding-left: 30px; margin-top: -2px; }
 .menu a { font: 12px var(--ui); color: var(--ink); white-space: nowrap; }
 
+/* the invitation a shared link opens on: tap it to step into the dark room */
+.invite { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; align-content: center; gap: 14px; padding: max(18px, env(safe-area-inset-top, 0px)) 16px max(18px, env(safe-area-inset-bottom, 0px)); background: radial-gradient(120% 90% at 50% 40%, #2a1714 0%, #140b0a 70%); transition: opacity 0.9s ease; }
+.invite.leaving { opacity: 0; pointer-events: none; }
+.invite button { all: unset; cursor: pointer; display: block; width: min(calc(100vw - 32px), calc((100dvh - 90px) * 0.7255)); aspect-ratio: 740 / 1020; transition: transform 0.9s cubic-bezier(.5, 0, .2, 1), filter 0.3s; filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55)); }
+.invite button:hover { transform: translateY(-3px) rotate(-0.4deg); }
+.invite button:focus-visible { outline: 2px solid #e9c7d8; outline-offset: 6px; border-radius: 12px; }
+.invite.leaving button { transform: scale(1.06) translateY(-12px); }
+.invite svg { width: 100%; height: 100%; display: block; }
+.invite p { margin: 0; color: #d9b9c4; font: 500 22px var(--hand); letter-spacing: 0.02em; animation: breathe 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .invite button, .invite { transition: none; } .invite p { animation: none; } }
 .recv-hint.long { white-space: normal; width: min(88vw, 520px); text-align: center; line-height: 1.15; }
 .recv-hint { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 18px); left: 50%; translate: -50% 0; color: #ead6c8; font-family: var(--hand); font-size: 26px; z-index: 3; white-space: nowrap; pointer-events: none; transition: opacity 0.6s; }
 .ticket { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); translate: -50% 0; width: min(330px, calc(100% - 32px)); padding: 14px 18px; z-index: 4; display: grid; gap: 4px; }
@@ -184,6 +194,10 @@ body.panel .stage { padding-right: 420px; }
 </main>
 
 <div class="loading" id="loading" hidden>Unwrapping…</div>
+<div class="invite" id="invite" hidden>
+  <button type="button" id="inv-open" aria-label="Open the invitation"><svg id="inv-svg" viewBox="0 0 740 1020" aria-hidden="true"></svg></button>
+  <p>Tap the invitation to step inside</p>
+</div>
 
 <section class="stage" id="stage" hidden>
   <svg id="poster" viewBox="0 0 800 1000" role="img" aria-label="A cake poster with a candle for each song"></svg>
@@ -882,7 +896,7 @@ body.panel .stage { padding-right: 420px; }
     $("exit").textContent = state.shared ? "Bake one back" : "‹ Keep decorating";
     setMode("receive");
   }
-  $("preview").addEventListener("click", receive);
+  $("preview").addEventListener("click", () => showInvite(inviteFromState({ at: Date.now() })));
   $("relight").addEventListener("click", receive);
   const backToEditor = () => { closeSheets(); state.items.forEach((i) => delete i.lit); setMode("decorate"); };
   const startOver = () => { closeSheets(); stopMic(); state.items = []; state.to = state.from = ""; state.shared = false; state.melt = 0; state.melted = false; history.replaceState(null, "", "/"); setMode("shop"); };
@@ -963,6 +977,144 @@ body.panel .stage { padding-right: 420px; }
   $("mic").hidden = !hasMic;
   $("mic").addEventListener("click", () => (mic ? stopMic() : startMic()));
 
+
+  // ---------- the invitation: a paper-lace card, drawn here (not a photo) ----------
+  const INK = "#a3437e";
+  // points every `step` along a rounded rectangle's outline, clockwise from the top-left corner's end
+  function rrPoints(x, y, w, h, r, step) {
+    const segs = [[x + r, y, x + w - r, y], [x + w - r, y, x + w, y + r, x + w - r, y + r], [x + w, y + r, x + w, y + h - r], [x + w, y + h - r, x + w - r, y + h, x + w - r, y + h - r], [x + w - r, y + h, x + r, y + h], [x + r, y + h, x, y + h - r, x + r, y + h - r], [x, y + h - r, x, y + r], [x, y + r, x + r, y, x + r, y + r]];
+    const len = (sg) => (sg.length === 4 ? Math.hypot(sg[2] - sg[0], sg[3] - sg[1]) : (Math.PI / 2) * r);
+    const at = (sg, t) => {
+      if (sg.length === 4) return [sg[0] + (sg[2] - sg[0]) * t, sg[1] + (sg[3] - sg[1]) * t];
+      const [ax, ay, , , cx, cy] = sg, a0 = Math.atan2(ay - cy, ax - cx), a = a0 + (Math.PI / 2) * t;
+      return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+    };
+    const total = segs.reduce((n, sg) => n + len(sg), 0), n = Math.round(total / step), pts = [];
+    for (let i = 0; i < n; i++) {
+      let d = (i / n) * total, k = 0;
+      while (d > len(segs[k])) d -= len(segs[k++]);
+      pts.push(at(segs[k], d / len(segs[k])));
+    }
+    return pts;
+  }
+  const rrPath = (x, y, w, h, r) => `M${x + r} ${y}H${x + w - r}A${r} ${r} 0 0 1 ${x + w} ${y + r}V${y + h - r}A${r} ${r} 0 0 1 ${x + w - r} ${y + h}H${x + r}A${r} ${r} 0 0 1 ${x} ${y + h - r}V${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}Z`;
+  // the inner panel: a tall arch with softer bottom corners
+  const panelPath = (x, y, w, h, rt, rb) => `M${x} ${y + rt}A${rt} ${rt} 0 0 1 ${x + rt} ${y}H${x + w - rt}A${rt} ${rt} 0 0 1 ${x + w} ${y + rt}V${y + h - rb}A${rb} ${rb} 0 0 1 ${x + w - rb} ${y + h}H${x + rb}A${rb} ${rb} 0 0 1 ${x} ${y + h - rb}Z`;
+  let LACE = "";
+  function laceSVG() {
+    if (LACE) return LACE;
+    const scal = rrPoints(14, 14, 712, 992, 60, 27);
+    let edge = `M${scal[0][0].toFixed(1)} ${scal[0][1].toFixed(1)}`;
+    scal.forEach((p, i) => { const q = scal[(i + 1) % scal.length]; edge += `A15 15 0 0 1 ${q[0].toFixed(1)} ${q[1].toFixed(1)}`; });
+    const bumpHoles = scal.map(([x, y], i) => { const q = scal[(i + 1) % scal.length], mx = (x + q[0]) / 2, my = (y + q[1]) / 2, dx = mx - 370, dy = my - 510, d = Math.hypot(dx, dy); return `<circle cx="${(mx + (dx / d) * 4).toFixed(1)}" cy="${(my + (dy / d) * 4).toFixed(1)}" r="3.3"/>`; }).join("");
+    const flower = (x, y, k) => {
+      let f = `<circle cx="${x}" cy="${y}" r="27" fill="#fff"/><circle cx="${x}" cy="${y}" r="4.5"/>`;
+      const n = k % 2 ? 8 : 6;
+      for (let i = 0; i < n; i++) { const a = (i / n) * 360 + k * 11; f += `<ellipse cx="${x}" cy="${y - 13}" rx="3.6" ry="8.5" transform="rotate(${a.toFixed(0)} ${x} ${y})"/>`; }
+      for (let i = 0; i < n; i++) { const a = ((i + 0.5) / n) * 360 + k * 11, rad = (a * Math.PI) / 180; f += `<circle cx="${(x + Math.sin(rad) * 22).toFixed(1)}" cy="${(y - Math.cos(rad) * 22).toFixed(1)}" r="1.8"/>`; }
+      return f;
+    };
+    const flowers = rrPoints(62, 62, 616, 896, 76, 104).map(([x, y], i) => flower(+x.toFixed(1), +y.toFixed(1), i)).join("");
+    const panel = panelPath(122, 116, 496, 790, 150, 64), panelRim = panelPath(110, 104, 520, 814, 162, 76);
+    LACE = `<defs>
+      <pattern id="iv-holes" width="36" height="36" patternUnits="userSpaceOnUse" patternTransform="rotate(12)">
+        <rect width="36" height="36" fill="#fff"/><circle cx="18" cy="18" r="2.6" fill="#000"/>
+        ${[0, 60, 120, 180, 240, 300].map((a) => `<ellipse cx="18" cy="11.5" rx="1.9" ry="4.2" fill="#000" transform="rotate(${a} 18 18)"/>`).join("")}
+        <circle cx="0" cy="0" r="2.2" fill="#000"/><circle cx="36" cy="0" r="2.2" fill="#000"/><circle cx="0" cy="36" r="2.2" fill="#000"/><circle cx="36" cy="36" r="2.2" fill="#000"/>
+        <circle cx="18" cy="0" r="1.2" fill="#000"/><circle cx="0" cy="18" r="1.2" fill="#000"/><circle cx="36" cy="18" r="1.2" fill="#000"/><circle cx="18" cy="36" r="1.2" fill="#000"/>
+      </pattern>
+      <mask id="iv-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="740" height="1020">
+        <path d="${edge}Z" fill="#fff"/>
+        <path d="${rrPath(36, 36, 668, 948, 54)} ${panelRim}" fill-rule="evenodd" fill="url(#iv-holes)"/>
+        <g fill="#000">${flowers}${bumpHoles}</g>
+        <path d="${rrPath(27, 27, 686, 966, 58)}" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 11"/>
+        <path d="${panelPath(114, 108, 512, 806, 158, 72)}" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 10"/>
+      </mask>
+      <filter id="iv-emboss" x="-3%" y="-3%" width="106%" height="106%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="1.3" result="b"/>
+        <feDiffuseLighting in="b" surfaceScale="2.6" diffuseConstant="1.05" lighting-color="#fff" result="d"><feDistantLight azimuth="235" elevation="58"/></feDiffuseLighting>
+        <feComposite in="d" in2="SourceAlpha" operator="in" result="d2"/>
+        <feBlend in="SourceGraphic" in2="d2" mode="multiply" result="m"/>
+        <feSpecularLighting in="b" surfaceScale="2.6" specularConstant=".5" specularExponent="16" lighting-color="#fff" result="s"><feDistantLight azimuth="235" elevation="50"/></feSpecularLighting>
+        <feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
+        <feComposite in="m" in2="s2" operator="arithmetic" k2="1" k3=".7"/>
+      </filter>
+      <filter id="iv-paper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="3"/><feColorMatrix type="matrix" values="0 0 0 0 .55  0 0 0 0 .48  0 0 0 0 .4  0 0 0 .12 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+      <radialGradient id="iv-age" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#8a6a50" stop-opacity="0"/><stop offset="1" stop-color="#8a6a50" stop-opacity=".22"/></radialGradient>
+    </defs>
+    <g filter="url(#iv-emboss)"><rect width="740" height="1020" fill="#f1ebe1" mask="url(#iv-mask)"/></g>
+    <rect width="740" height="1020" fill="url(#iv-age)" mask="url(#iv-mask)"/>
+    <path d="${panel}" fill="#f2ede4"/>
+    <path d="${panel}" fill="#fff" filter="url(#iv-paper)"/>
+    <path d="${panel}" fill="none" stroke="#d8ccbb" stroke-width="2"/><path d="${panelPath(125, 119, 490, 784, 147, 61)}" fill="none" stroke="#fff" stroke-width="1.6" opacity=".8"/>`;
+    return LACE;
+  }
+  // a pen drawing of a drippy cake with one candle per song
+  function inviteCakeSVG(n, melt, melted) {
+    const cx = 370, top = 548, rx = 98, ry = 22, bot = 660, st = `stroke="${INK}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"`;
+    let s = `<g ${st} fill="#f2ede4">`;
+    // plate
+    s += `<ellipse cx="${cx}" cy="${bot + 6}" rx="128" ry="22"/><ellipse cx="${cx}" cy="${bot + 2}" rx="114" ry="15"/>`;
+    for (let i = 0; i < 15; i++) { const a = Math.PI * (0.08 + (i / 14) * 0.84); s += `<circle cx="${(cx - Math.cos(a) * 121).toFixed(1)}" cy="${(bot + 6 + Math.sin(a) * 18).toFixed(1)}" r="2.6"/>`; }
+    // body
+    s += `<path d="M${cx - rx} ${top}V${bot - 4}A${rx} ${ry * 0.7} 0 0 0 ${cx + rx} ${bot - 4}V${top}"/>`;
+    for (let i = 0; i < 11; i++) { const x = cx - rx + 9 + i * ((2 * rx - 18) / 10); s += `<circle cx="${x.toFixed(1)}" cy="${(bot - 12 + Math.sin(((x - cx) / rx) * 1.4) * 0 + Math.pow((x - cx) / rx, 2) * -0 + (1 - Math.pow((x - cx) / rx, 2)) * 10).toFixed(1)}" r="3.4"/>`; }
+    // top, then candles standing on it
+    s += `<ellipse cx="${cx}" cy="${top}" rx="${rx}" ry="${ry}"/>`;
+    const k = Math.max(1, Math.min(10, n)), hFull = 70, h = melted ? 6 : Math.max(12, hFull * (1 - 0.8 * (melt || 0)));
+    const xs = Array.from({ length: k }, (_, i) => (k === 1 ? cx : cx - 66 + (i * 132) / (k - 1)));
+    xs.forEach((x, i) => {
+      const y = top - 5 + (i % 2 ? 7 : -3) * (k > 4 ? 1 : 0), w = 9;
+      if (melted) { s += `<ellipse cx="${x.toFixed(1)}" cy="${y + 1}" rx="9" ry="3.2"/>`; return; }
+      s += `<rect x="${(x - w / 2).toFixed(1)}" y="${(y - h).toFixed(1)}" width="${w}" height="${h.toFixed(1)}" rx="1.5"/>`;
+      for (let yy = y - h + 7; yy < y - 2; yy += 9) s += `<path d="M${(x - w / 2).toFixed(1)} ${(yy + 4).toFixed(1)}L${(x + w / 2).toFixed(1)} ${yy.toFixed(1)}" fill="none"/>`;
+      s += `<path d="M${x.toFixed(1)} ${(y - h).toFixed(1)}v-5" fill="none"/><path d="M${x.toFixed(1)} ${(y - h - 6).toFixed(1)}c-5 -6 -3 -12 0 -18c3 6 5 12 0 18z" fill="#f2ede4"/>`;
+    });
+    // drips over the front edge
+    let d = `M${cx - rx} ${top + 2}`;
+    const nd = 9, seg = (2 * rx) / nd;
+    for (let i = 0; i < nd; i++) {
+      const x = cx - rx + i * seg, t = (x + seg / 2 - cx) / rx, base = top + Math.sqrt(Math.max(0, 1 - t * t)) * ry, len = 18 + ((i * 37) % 5) * 9;
+      d += ` Q${(x + seg * 0.2).toFixed(1)} ${base.toFixed(1)} ${(x + seg * 0.28).toFixed(1)} ${(base + len * 0.7).toFixed(1)} Q${(x + seg / 2).toFixed(1)} ${(base + len + 8).toFixed(1)} ${(x + seg * 0.72).toFixed(1)} ${(base + len * 0.7).toFixed(1)} Q${(x + seg * 0.8).toFixed(1)} ${base.toFixed(1)} ${(x + seg).toFixed(1)} ${(top + Math.sqrt(Math.max(0, 1 - Math.pow((x + seg - cx) / rx, 2))) * ry + 2).toFixed(1)}`;
+    }
+    s += `<path d="${d}" fill="#f2ede4"/>`;
+    // fruit and leaves around the rim, in front of the candles
+    [[-80, 6], [-40, 16], [8, 19], [52, 14], [84, 4]].forEach(([dx, dy], i) => {
+      const x = cx + dx, y = top + dy;
+      s += `<path d="M${x + 4} ${y - 10}q8 -8 14 -4q-6 8 -14 4z"/><circle cx="${x}" cy="${y}" r="9.5"/><path d="M${x - 4} ${y - 3}q2 -3 5 -3" fill="none"/>`;
+    });
+    return s + "</g>";
+  }
+  const sparkle = (x, y, r) => `<path d="M${x} ${y - r}Q${x} ${y} ${x + r} ${y}Q${x} ${y} ${x} ${y + r}Q${x} ${y} ${x - r} ${y}Q${x} ${y} ${x} ${y - r}Z" fill="none" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>`;
+  const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  function inviteSVG(o) {
+    const from = (o.from || "Someone").toUpperCase(), to = o.to || "you", d = new Date(o.at || Date.now());
+    const nameSize = Math.min(92, 480 / Math.max(3, to.length * 0.5));
+    const left = (o.at || Date.now()) + 7 * 864e5 - Date.now();
+    const candles = o.melted ? "BURNED DOWN" : o.openedAt ? "STILL LIT" : left < 864e5 ? `MELT IN ${Math.max(1, Math.ceil(left / 36e5))} HOUR${left <= 36e5 ? "" : "S"}` : `MELT IN ${Math.ceil(left / 864e5)} DAYS`;
+    const caps = `font-family="Cinzel, 'Cormorant Garamond', serif" font-weight="500" fill="${INK}"`, info = `font-family="Oswald, 'Arial Narrow', sans-serif" font-weight="500" font-size="25" fill="${INK}" text-anchor="middle" letter-spacing="1"`;
+    return `${laceSVG()}
+      <defs><path id="iv-arc" d="M140 300 Q370 140 600 300"/></defs>
+      <text ${caps} font-size="${Math.min(31, 470 / ((from.length + 17) * 0.62)).toFixed(1)}" letter-spacing="2.5"><textPath href="#iv-arc" startOffset="50%" text-anchor="middle">${esc(from)} BAKED A CAKE FOR</textPath></text>
+      <text x="370" y="${330 + nameSize * 0.18}" text-anchor="middle" font-family="'Pinyon Script', cursive" font-size="${nameSize.toFixed(0)}" fill="${INK}">${esc(to)}</text>
+      ${sparkle(560, 360, 11)}${sparkle(578, 384, 6)}${sparkle(176, 462, 10)}${sparkle(194, 482, 6)}${sparkle(546, 600, 9)}${sparkle(562, 624, 6)}
+      ${inviteCakeSVG(o.n, o.melt, o.melted)}
+      <text x="370" y="758" text-anchor="middle" font-family="Bellefair, 'Cormorant Garamond', serif" font-size="54" fill="${INK}" letter-spacing="1">${o.n} SONG${o.n === 1 ? "" : "S"} INSIDE</text>
+      <text x="370" y="808" ${info}>BAKED : ${String(d.getDate()).padStart(2, "0")} | ${MONTHS[d.getMonth()]} | ${d.getFullYear()}</text>
+      <text x="370" y="848" ${info}>CANDLES : ${candles}</text>
+      <text x="370" y="888" text-anchor="middle" font-family="'Pinyon Script', cursive" font-size="27" fill="${INK}">${o.melted ? "you came a little late" : "blow them out to hear the songs"}</text>`;
+  }
+  function showInvite(o) {
+    $("inv-svg").innerHTML = inviteSVG(o);
+    const inv = $("invite"); inv.classList.remove("leaving"); inv.hidden = false;
+    receive();
+  }
+  $("inv-open").addEventListener("click", () => {
+    const inv = $("invite"); if (inv.classList.contains("leaving")) return;
+    inv.classList.add("leaving"); setTimeout(() => { inv.hidden = true; inv.classList.remove("leaving"); }, 900);
+  });
+  const inviteFromState = (extra = {}) => ({ from: state.from, to: state.to, n: state.items.filter((i) => i.type === "candle").length, melt: state.melt, melted: state.melted, ...extra });
+
   // ---------- open a shared cake from /c/<id> ----------
   async function openShared(id) {
     $("shop").hidden = true; $("loading").hidden = false;
@@ -974,7 +1126,7 @@ body.panel .stage { padding-right: 420px; }
       state.to = c.to || ""; state.from = c.from || "";
       state.items = c.items.map((it) => ({ ...it, id: uid++ }));
       state.shared = true; $("exit").textContent = "Bake one back";
-      $("loading").hidden = true; markLook(); receive();
+      $("loading").hidden = true; markLook(); showInvite(inviteFromState({ at: c.at, openedAt: c.openedAt }));
     } catch {
       $("loading").hidden = true; history.replaceState(null, "", "/"); setMode("shop");
       $("shop-note").textContent = "That cake couldn't be found. Maybe it was eaten already. Bake a new one?"; $("shop-note").hidden = false;
