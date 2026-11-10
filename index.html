@@ -757,7 +757,9 @@ body.panel .stage { padding-right: 420px; }
     if (state.mode !== "decorate") return;
     const g = e.target.closest(".item"); if (!g) { if (state.sel) { state.sel = null; render(); } return; }
     const it = state.items.find((i) => i.id === +g.dataset.id), p = toSVG(e);
-    drag = { it, g, sx: p.x, sy: p.y, u: it.u, v: it.v, moved: false }; svg.setPointerCapture(e.pointerId);
+    // flames live in their own layer above the photo grain, so they have to be moved along with the candle
+    const fl = svg.querySelector(`.flame[data-id="${g.dataset.id}"]`);
+    drag = { it, g, fl, flT: fl ? fl.getAttribute("transform") : "", sx: p.x, sy: p.y, u: it.u, v: it.v, moved: false }; svg.setPointerCapture(e.pointerId);
   });
   svg.addEventListener("pointermove", (e) => {
     if (!drag) return; const p = toSVG(e), L = layout(state.cake, LOOKS[state.look]), T = L.top;
@@ -766,6 +768,7 @@ body.panel .stage { padding-right: 420px; }
     drag.it.u = u; drag.it.v = v;
     const [x0, y0] = placeOn(L, drag.u, drag.v), [x1, y1] = placeOn(L, u, v);
     drag.g.setAttribute("transform", `translate(${x1 - x0} ${y1 - y0})`); $("selbar").hidden = true;
+    if (drag.fl) drag.fl.setAttribute("transform", `translate(${x1 - x0} ${y1 - y0}) ${drag.flT}`);
   });
   svg.addEventListener("pointerup", () => { if (!drag) return; const d = drag; drag = null; state.sel = d.moved ? state.sel : state.sel === d.it.id ? null : d.it.id; render(); });
   function positionSelbar() {
