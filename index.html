@@ -487,7 +487,7 @@ body.panel .stage { padding-right: 420px; }
           <text x="400" y="168" text-anchor="middle" font-family="Pinyon Script, cursive" font-size="${fs.toFixed(0)}" fill="${red}">${esc(head)}</text>
           <text x="${left.toFixed(0)}" y="236" font-family="Cormorant Garamond, Georgia, serif" font-weight="700" font-size="46" fill="${red}">You a Playlist</text>
           ${lines(58, 902, 31, ["Take your pick from a little", "list of songs, baked just", `for ${c.to || "you"}`], `font-family="Cormorant Garamond, Georgia, serif" font-weight="600" font-size="28" fill="${red}"`)}
-          ${lines(744, 933, 28, ["Blow to listen", `${c.n} candle${c.n === 1 ? "" : "s"}`], `text-anchor="end" font-family="Cormorant Garamond, Georgia, serif" font-weight="600" font-size="26" fill="${red}"`)}`;
+          ${lines(744, 961, 28, ["Blow to listen"], `text-anchor="end" font-family="Cormorant Garamond, Georgia, serif" font-weight="600" font-size="26" fill="${red}"`)}`;
       },
     },
     emerald: {
@@ -504,7 +504,7 @@ body.panel .stage { padding-right: 420px; }
           ${lines(400, 348, 19, ["A LITTLE SOMETHING SWEET", "FOR YOUR EARS"], `text-anchor="middle" ${sans} font-size="15" fill="${y}"`)}
           <ellipse cx="104" cy="488" rx="54" ry="19" fill="none" stroke="${y}" stroke-width="1.6"/><text x="104" y="494" text-anchor="middle" ${sans} font-size="15" fill="${y}">FRESHLY</text>
           <ellipse cx="696" cy="488" rx="54" ry="19" fill="none" stroke="${y}" stroke-width="1.6"/><text x="696" y="494" text-anchor="middle" ${sans} font-size="15" fill="${y}">BAKED</text>
-          ${lines(66, 934, 20, ["SERVED // WARM, WITH", `${c.n} CANDLE${c.n === 1 ? "" : "S"} ON TOP`], `${sans} font-size="16" fill="${y}"`)}
+          ${lines(66, 954, 20, ["SERVED WARM"], `${sans} font-size="16" fill="${y}"`)}
           ${lines(734, 934, 20, ["BLOW GENTLY", "TO LISTEN"], `text-anchor="end" ${sans} font-size="16" fill="${y}"`)}`;
       },
     },
@@ -551,7 +551,7 @@ body.panel .stage { padding-right: 420px; }
         const cream = "#f6ecdc";
         return `<defs><radialGradient id="${c.idp}vel" cx=".5" cy=".5" r=".72"><stop offset="0" stop-color="#d42a2f"/><stop offset=".65" stop-color="#b0161d"/><stop offset="1" stop-color="#6e0b11"/></radialGradient></defs>
           <rect width="${W}" height="${H}" fill="url(#${c.idp}vel)"/>
-          ${lines(62, 126, 17, [`NO. ${String(c.n).padStart(2, "0")}`, `FOR ${(c.to || "YOU").toUpperCase()}`], `${sans} font-weight="500" font-size="12" letter-spacing="1.5" fill="${cream}"`)}
+          ${lines(62, 126, 17, [`FOR ${(c.to || "YOU").toUpperCase()}`], `${sans} font-weight="500" font-size="12" letter-spacing="1.5" fill="${cream}"`)}
           ${lines(414, 126, 19, ["Baked fresh in a tiny kitchen somewhere,", "with a few favourite songs folded into", "the batter. Best served warm, with the", "lights down low."], `${sans} font-size="15" fill="${cream}"`)}`;
       },
       front(c) {
