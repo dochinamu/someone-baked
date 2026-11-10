@@ -1111,7 +1111,7 @@ body.panel .stage { padding-right: 420px; }
     const caps = `font-family="Cinzel, 'Cormorant Garamond', serif" font-weight="500" fill="${INK}"`, info = `font-family="Oswald, 'Arial Narrow', sans-serif" font-weight="500" font-size="25" fill="${INK}" text-anchor="middle" letter-spacing="1"`;
     return `${laceSVG()}
       <defs><path id="iv-arc" d="M140 300 Q370 140 600 300"/></defs>
-      <text ${caps} font-size="${Math.min(31, 470 / ((from.length + 17) * 0.62)).toFixed(1)}" letter-spacing="2.5"><textPath href="#iv-arc" startOffset="50%" text-anchor="middle">${esc(from)} BAKED A CAKE FOR</textPath></text>
+      <text ${caps} font-size="${Math.min(31, (31 * 22) / (from.length + 17)).toFixed(1)}" letter-spacing="2.5"><textPath href="#iv-arc" startOffset="50%" text-anchor="middle">${esc(from)} BAKED A CAKE FOR</textPath></text>
       <text x="370" y="${330 + nameSize * 0.18}" text-anchor="middle" font-family="'Pinyon Script', cursive" font-size="${nameSize.toFixed(0)}" fill="${INK}">${esc(to)}</text>
       ${sparkle(560, 360, 11)}${sparkle(578, 384, 6)}${sparkle(176, 462, 10)}${sparkle(194, 482, 6)}${sparkle(546, 600, 9)}${sparkle(562, 624, 6)}
       ${inviteCakeSVG(o.n, o.melt, o.melted)}
