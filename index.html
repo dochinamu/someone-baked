@@ -114,14 +114,38 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 .link { font: 13px ui-monospace, Menlo, monospace; background: rgba(255, 255, 255, 0.85); border-radius: 10px; padding: 10px; user-select: all; }
 .pair { display: flex; gap: 8px; flex-wrap: wrap; }
 .pair .btn { flex: 1; font-size: 15px; padding: 12px; }
-.menu { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-family: var(--hand); font-size: 24px; color: var(--brick); }
-.menu li { display: flex; gap: 10px; align-items: baseline; border-bottom: 1px dashed rgba(178, 58, 54, 0.3); padding: 2px 0; }
-.menu li::before { content: "☑"; font-size: 20px; }
-.menu .t { flex: 1; min-width: 0; line-height: 1.1; }
-.menu small { font-family: var(--ui); font-size: 12px; color: var(--soft); display: block; }
-.menu li { flex-wrap: wrap; }
-.menu .go { display: flex; gap: 10px; flex-wrap: wrap; width: 100%; padding-left: 30px; margin-top: -2px; }
-.menu a { font: 12px var(--ui); color: var(--ink); white-space: nowrap; }
+/* the playlist at the end: album art you tap to play, the playing song keeps its progress bar */
+.menu-kicker { margin: 0 0 2px; font: 600 20px var(--hand); color: var(--brick); }
+.menu { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 46vh; overflow-y: auto; }
+.menu li { display: grid; grid-template-columns: 22px 54px 1fr auto; gap: 0 12px; align-items: center; padding: 8px 6px; border-radius: 14px; transition: background .2s; }
+.menu li.on { background: rgba(255, 255, 255, 0.6); }
+.menu .n { font: 600 20px var(--hand); color: var(--brick); text-align: center; }
+.menu .cover { position: relative; width: 54px; height: 54px; border: 0; padding: 0; border-radius: 9px; overflow: hidden; cursor: pointer; background: #e9d8cf; box-shadow: 0 2px 6px rgba(60, 30, 20, .18); }
+.menu .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.menu .cover .ph { display: grid; place-items: center; width: 100%; height: 100%; font-size: 22px; color: var(--brick); }
+.menu .cover .pp { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(30, 15, 10, .35); color: #fff; font-size: 16px; opacity: 0; transition: opacity .15s; }
+.menu .cover:hover .pp, .menu .cover:focus-visible .pp, .menu li.on .cover .pp { opacity: 1; }
+.menu .cover:disabled { cursor: default; } .menu .cover:disabled .pp { display: none; }
+.menu .t { min-width: 0; font: 500 15px/1.25 var(--ui); color: var(--ink); }
+.menu .t span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu .t small { display: block; font-size: 12.5px; color: var(--soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu .prog { display: none; grid-column: 3 / -1; align-items: center; gap: 8px; margin-top: 6px; font: 11px var(--ui); color: var(--soft); font-variant-numeric: tabular-nums; }
+.menu li.on .prog { display: flex; }
+.menu .prog i { flex: 1; height: 3px; border-radius: 2px; background: rgba(0, 0, 0, .12); position: relative; overflow: hidden; }
+.menu .prog i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); background: var(--brick); }
+.menu .go { display: flex; gap: 6px; }
+.menu .go a { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: rgba(255, 255, 255, .85); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); transition: transform .15s; }
+.menu .go a:hover { transform: translateY(-1px); }
+.menu .go svg { width: 18px; height: 18px; display: block; }
+@media (max-width: 560px) {
+  .menu li { grid-template-columns: 14px 46px 1fr auto; gap: 0 9px; padding: 7px 4px; }
+  .menu .cover { width: 46px; height: 46px; }
+  .menu .n { font-size: 17px; }
+  .menu .go { gap: 4px; }
+  .menu .go a { width: 26px; height: 26px; }
+  .menu .go svg { width: 16px; height: 16px; }
+}
+.menu-open { margin: 6px 0 0; font: 12px var(--ui); color: var(--soft); text-align: right; }
 
 /* the invitation a shared link opens on: tap it to step into the dark room */
 .invite { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; align-content: center; gap: 14px; padding: max(18px, env(safe-area-inset-top, 0px)) 16px max(18px, env(safe-area-inset-bottom, 0px)); background: radial-gradient(120% 90% at 50% 40%, #2a1714 0%, #140b0a 70%); transition: opacity 0.9s ease; }
@@ -293,8 +317,10 @@ body.panel .stage { padding-right: 420px; }
 
 <div class="sheet" id="s-menu" hidden>
   <div class="box glass">
+    <p class="menu-kicker">your playlist</p>
     <h3 id="menu-title"></h3>
     <ol class="menu" id="menu"></ol>
+    <p class="menu-open">Tap a cover to play · open the full song in your app</p>
     <div class="pair"><button type="button" class="btn" id="relight">Light them again</button><button type="button" class="btn red" id="bake">Bake one back</button></div>
   </div>
 </div>
@@ -962,17 +988,60 @@ body.panel .stage { padding-right: 420px; }
     const d = audio.duration || 30, t = audio.currentTime;
     $("tk-bar").style.setProperty("--p", (t / d) * 100 + "%");
     $("tk-time").textContent = `0:${String(Math.floor(t)).padStart(2, "0")} / 0:${String(Math.round(d)).padStart(2, "0")}`;
+    syncMenu();
   });
+  // small "open in" marks for each service
+  const SVC = {
+    spotify: ["Spotify", `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#1db954"/><path d="M6.5 9.3c3.8-1.1 8-.8 11 1M7.2 12.4c3.1-.8 6.5-.5 9 .9M7.8 15.3c2.5-.6 5-.4 7 .7" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>`],
+    apple: ["Apple Music", `<svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#fa2d48"/><path d="M10 16.2V8.4l6.4-1.4v7.6" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8.6" cy="16.3" r="1.8" fill="#fff"/><circle cx="15" cy="14.8" r="1.8" fill="#fff"/></svg>`],
+    youtube: ["YouTube Music", `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ff0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.3"/><path d="M10.6 9.6v4.8l4-2.4z" fill="#fff"/></svg>`],
+  };
+  const fmt = (t) => `0:${String(Math.max(0, Math.floor(t))).padStart(2, "0")}`;
   function showMenu() {
     const cs = state.items.filter((i) => i.type === "candle");
     $("menu-title").textContent = `${state.from || "Someone"} baked you ${cs.length} song${cs.length > 1 ? "s" : ""}`;
-    $("menu").innerHTML = cs.map((s) => {
+    $("menu").innerHTML = cs.map((s, i) => {
       const q = encodeURIComponent(`${s.song} ${s.artist}`.trim());
-      return `<li><span class="t">${esc(s.song)}<small>${esc(s.artist)}</small></span><span class="go"><a href="https://open.spotify.com/search/${q}" target="_blank" rel="noreferrer">Spotify ↗</a>${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noreferrer">Apple ↗</a>` : ""}<a href="https://music.youtube.com/search?q=${q}" target="_blank" rel="noreferrer">YouTube ↗</a></span></li>`;
+      const links = [["spotify", `https://open.spotify.com/search/${q}`], s.url ? ["apple", s.url] : null, ["youtube", `https://music.youtube.com/search?q=${q}`]].filter(Boolean);
+      return `<li data-i="${i}">
+        <span class="n">${i + 1}</span>
+        <button type="button" class="cover" data-play="${i}" ${s.preview ? "" : "disabled"} aria-label="${s.preview ? `Play ${esc(s.song)}` : `${esc(s.song)} (no preview)`}">${s.art ? `<img src="${esc(s.art)}" alt="">` : `<span class="ph">♪</span>`}<span class="pp">▶</span></button>
+        <span class="t"><span>${esc(s.song)}</span><small>${esc(s.artist)}</small></span>
+        <span class="go">${links.map(([k, href]) => `<a href="${esc(href)}" target="_blank" rel="noreferrer" aria-label="Open in ${SVC[k][0]}" title="Open in ${SVC[k][0]}">${SVC[k][1]}</a>`).join("")}</span>
+        <span class="prog"><i></i><b class="tm">0:00</b></span>
+      </li>`;
     }).join("");
     $("bake").textContent = state.shared ? "Bake one back" : "Bake another";
     $("ticket").hidden = true; $("s-menu").hidden = false;
+    syncMenu();
   }
+  // the playlist mirrors whatever is playing, and carries on to the next song when one ends
+  function syncMenu() {
+    if ($("s-menu").hidden) return;
+    const cs = state.items.filter((i) => i.type === "candle"), at = cs.indexOf(playing), on = !!playing && !audio.paused;
+    $("menu").querySelectorAll("li").forEach((li) => {
+      const me = +li.dataset.i === at;
+      li.classList.toggle("on", me);
+      li.querySelector(".pp").textContent = me && on ? "❚❚" : "▶";
+      if (me) { const d = audio.duration || 30, t = audio.currentTime; li.querySelector(".prog i").style.setProperty("--p", (t / d) * 100 + "%"); li.querySelector(".tm").textContent = `${fmt(t)} / ${fmt(Math.round(d))}`; }
+    });
+  }
+  $("menu").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-play]"); if (!b) return;
+    const s = state.items.filter((i) => i.type === "candle")[+b.dataset.play];
+    if (playing === s && !audio.paused) audio.pause();
+    else if (playing === s && audio.src === s.preview) audio.play().catch(() => {});
+    else { playing = s; audio.src = s.preview; audio.currentTime = 0; audio.play().catch(() => {}); }
+    syncMenu();
+  });
+  audio.addEventListener("play", syncMenu); audio.addEventListener("pause", syncMenu);
+  audio.addEventListener("ended", () => {
+    if ($("s-menu").hidden || state.mode !== "receive") return;
+    const cs = state.items.filter((i) => i.type === "candle"), from = cs.indexOf(playing);
+    const next = cs.slice(from + 1).find((i) => i.preview);
+    if (next) { playing = next; audio.src = next.preview; audio.currentTime = 0; audio.play().catch(() => {}); }
+    syncMenu();
+  });
 
   // ---------- blow into the mic ----------
   // Blowing makes broadband rumble that sits mostly under ~1 kHz; a sustained loud low band (~0.25 s) counts as a blow.
