@@ -120,6 +120,7 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 .menu .go { display: flex; gap: 10px; flex-wrap: wrap; width: 100%; padding-left: 30px; margin-top: -2px; }
 .menu a { font: 12px var(--ui); color: var(--ink); white-space: nowrap; }
 
+.recv-hint.long { white-space: normal; width: min(88vw, 520px); text-align: center; line-height: 1.15; }
 .recv-hint { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 18px); left: 50%; translate: -50% 0; color: #ead6c8; font-family: var(--hand); font-size: 26px; z-index: 3; white-space: nowrap; pointer-events: none; transition: opacity 0.6s; }
 .ticket { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); translate: -50% 0; width: min(330px, calc(100% - 32px)); padding: 14px 18px; z-index: 4; display: grid; gap: 4px; }
 .ticket:has(.tk-art:not([hidden])) { padding-right: 82px; }
@@ -263,7 +264,7 @@ body.panel .stage { padding-right: 420px; }
   <div class="box glass">
     <button type="button" class="x" data-close aria-label="Close">×</button>
     <h3 id="sent-title"></h3>
-    <p>The songs stay a secret until they blow the candles out.</p>
+    <p>The songs stay a secret until they blow the candles out. The candles start burning now: if the link sits unopened for 7 days, they burn down and the songs go with them.</p>
     <div class="link" id="link"></div>
     <p class="muted" id="sent-note" hidden></p>
     <div class="pair"><button type="button" class="btn" id="copy">Copy link</button><button type="button" class="btn" id="share">Share…</button></div>
@@ -324,9 +325,32 @@ body.panel .stage { padding-right: 420px; }
   const STYLES = { bubble: { name: "Bubble", w: 16, h: 120 }, swirl: { name: "Swirl", w: 13, h: 128 }, twist: { name: "Twist", w: 12, h: 136 }, taper: { name: "Taper", w: 11, h: 142 }, metal: { name: "Metallic", w: 8, h: 156 } };
   const WAX = { blush: "#f2a7bb", baby: "#a8c5ec", butter: "#f5d96a", mint: "#bde2cd", lilac: "#c8b2e6", cream: "#f4eadb", cherry: "#d6343f", coral: "#f08a6c", silver: "#c6cacf", gold: "#d6ae55" };
   // flames cut from a real photo; each sits with its bottom centre on the wick
-  const FLAMES = [{ f: "a", w: 120, h: 173, ax: 51 }, { f: "b", w: 120, h: 182, ax: 60 }, { f: "d", w: 120, h: 182, ax: 49 }];
-  function candleSVG(style, color, x, y, idp, k, lit) {
-    const St = STYLES[style] || STYLES.taper, w = St.w, h = St.h, c = WAX[color] || WAX.cream, g = `${idp}g${k}`;
+  // by = the row where the visible flame ends (the photo fades out below it), so that row sits on the wick
+  const FLAMES = [{ f: "a", w: 120, h: 173, ax: 51, by: 141 }, { f: "b", w: 120, h: 182, ax: 60, by: 145 }, { f: "d", w: 120, h: 182, ax: 49, by: 160 }];
+  // a pool of wax around a candle's foot: an uneven, glossy blob that grows as it melts
+  function poolSVG(c, x, y, w, melt, k) {
+    const r = w / 2 + 2 + melt * (melt >= 1 ? 15 : 9), ry = r * 0.34, cy = y + 2.5, n = 9;
+    const pts = Array.from({ length: n }, (_, i) => {
+      const a = (i / n) * Math.PI * 2, j = 0.78 + 0.32 * Math.abs(Math.sin(i * 2.3 + k * 1.7));
+      return [x + Math.cos(a) * r * j, cy + Math.sin(a) * ry * j];
+    });
+    let d = "";
+    pts.forEach((p, i) => {
+      const q = pts[(i + 1) % n], m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+      d += (i ? "" : `M${((pts[n - 1][0] + p[0]) / 2).toFixed(1)} ${((pts[n - 1][1] + p[1]) / 2).toFixed(1)}`) + ` Q${p[0].toFixed(1)} ${p[1].toFixed(1)} ${m[0].toFixed(1)} ${m[1].toFixed(1)}`;
+    });
+    return `<path d="${d}Z" fill="${shade(c, 0.12)}" stroke="${shade(c, -0.2)}" stroke-width=".7" opacity=".93"/>
+      <ellipse cx="${(x - r * 0.25).toFixed(1)}" cy="${(cy - ry * 0.3).toFixed(1)}" rx="${(r * 0.32).toFixed(1)}" ry="${(ry * 0.22).toFixed(1)}" fill="#fff" opacity=".5"/>`;
+  }
+  function candleSVG(style, color, x, y, idp, k, lit, melt = 0) {
+    const St = STYLES[style] || STYLES.taper, w = St.w, c = WAX[color] || WAX.cream, g = `${idp}g${k}`;
+    melt = Math.min(1, Math.max(0, melt || 0));
+    if (melt >= 1) {
+      // burnt all the way down: a puddle and a curled bit of wick
+      const wick = `<path d="M${x + 1} ${y + 3} l1.6 -4.5" stroke="#2a1d17" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".85"/>`;
+      return { defs: "", svg: `<g class="body"></g>`, flame: "", base: [x, y, w], wick: [x, y - 14], pool: poolSVG(c, x, y, w, 1, k) + wick };
+    }
+    const h = Math.max(14, St.h * (1 - 0.86 * melt));
     const metal = style === "metal" || color === "silver" || color === "gold";
     const L = shade(c, 0.5), D = shade(c, -0.28);
     let defs = metal
@@ -360,13 +384,22 @@ body.panel .stage { padding-right: 420px; }
     }
     // soft shading so it sits in the same light as the photo
     body += `<rect x="${x0 - 1.5}" y="${y - 22}" width="${w + 3}" height="22" fill="url(#${idp}foot)"/>`;
+    if (melt > 0.1) {
+      // a softened top and a few drips running down
+      body += `<ellipse cx="${x}" cy="${top + 2}" rx="${(w / 2 + 1.5).toFixed(1)}" ry="3" fill="${L}"/>`;
+      [[-0.5, 0.35], [0.5, 0.6], [0.1, 0.22]].forEach(([side, len], i) => {
+        if (i === 2 && melt < 0.4) return;
+        const dx = x + side * w * 0.92, dl = Math.min(h - 4, h * len * (0.5 + melt));
+        body += `<path d="M${dx.toFixed(1)} ${top + 2} q${(side * 1.5).toFixed(1)} ${(dl / 2).toFixed(1)} 0 ${dl.toFixed(1)}" stroke="${L}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
+      });
+    }
     const wick = `<path d="M${x} ${top + 1} q1.2 -4 0 -8" stroke="#2a1d17" stroke-width="1.7" fill="none" stroke-linecap="round"/>`;
-    const F = FLAMES[k % FLAMES.length], sc = 0.42 * Math.pow(w / 12, 0.3), fw = F.w * sc, fh = F.h * sc;
+    const F = FLAMES[k % FLAMES.length], sc = 0.42 * Math.pow(w / 12, 0.3), fw = F.w * sc, fh = F.h * sc, fb = F.by * sc;
     const flame = `<g class="flame${lit === "ignite" ? " ignite" : ""}${lit ? "" : " out"}" transform="translate(${x} ${top - 4})">
-      <circle class="glow" cy="${(-fh * 0.42).toFixed(1)}" r="${(fh * 0.95).toFixed(1)}" fill="url(#${idp}glow)"/>
-      <image class="fl" href="${FLAME_DIR}${F.f}.webp" x="${(-F.ax * sc).toFixed(1)}" y="${(-fh).toFixed(1)}" width="${fw.toFixed(1)}" height="${fh.toFixed(1)}" style="animation-delay:-${(k * 0.37) % 2}s"/></g>`;
+      <circle class="glow" cy="${(-fb * 0.5).toFixed(1)}" r="${(fh * 0.95).toFixed(1)}" fill="url(#${idp}glow)"/>
+      <image class="fl" href="${FLAME_DIR}${F.f}.webp" x="${(-F.ax * sc).toFixed(1)}" y="${(-fb).toFixed(1)}" width="${fw.toFixed(1)}" height="${fh.toFixed(1)}" style="animation-delay:-${(k * 0.37) % 2}s;transform-origin:50% ${((F.by / F.h) * 100).toFixed(1)}%"/></g>`;
     const hit = `<rect x="${x - 16}" y="${top - 46}" width="32" height="${h + 50}" fill="transparent"/>`;
-    return { defs, svg: `${hit}<g class="body">${body}${wick}</g>`, flame, base: [x, y, w], wick: [x, top - 14] };
+    return { defs, svg: `${hit}<g class="body">${body}${wick}</g>`, flame, base: [x, y, w], wick: [x, top - 14], pool: melt > 0.02 ? poolSVG(c, x, y, w, melt, k) : "" };
   }
 
   // ---------- toppers ----------
@@ -574,12 +607,12 @@ body.panel .stage { padding-right: 420px; }
       if (it.type === "candle") {
         const on = opts.lit ? opts.lit(it) : true;
         const lit = on ? (opts.ignite && opts.ignite(it) ? "ignite" : true) : false;
-        const cd = candleSVG(it.style, it.color, x, y, idp, i, lit);
+        const cd = candleSVG(it.style, it.color, x, y, idp, i, lit, opts.melt);
         defs += cd.defs; mid += `<g class="item candle${it.draft ? " draft" : ""}" data-id="${it.id}">${cd.svg}</g>`;
         flames += cd.flame.replace('<g class="flame', `<g data-id="${it.id}" class="flame`);
         const [bx, by, bw] = cd.base;
         seat += `<ellipse cx="${bx}" cy="${by + 2}" rx="${(bw * 0.85 + 5).toFixed(1)}" ry="9" fill="url(#${idp}seatg)"/>`;
-        shadows += `<ellipse cx="${bx + 1}" cy="${by - 4.5}" rx="${(bw * 0.5 + 1).toFixed(1)}" ry="1.4" fill="#4a2418" opacity=".18"/>`;
+        shadows += `<ellipse cx="${bx + 1}" cy="${by - 4.5}" rx="${(bw * 0.5 + 1).toFixed(1)}" ry="1.4" fill="#4a2418" opacity=".18"/>` + cd.pool;
         if (on) wicks.push(cd.wick);
       } else mid += `<g class="item topper" data-id="${it.id}"><g class="body">${topperSVG(it.kind, x, y, idp, i)}</g></g>`;
     }
@@ -599,7 +632,11 @@ body.panel .stage { padding-right: 420px; }
   }
 
   // ---------- state ----------
-  const state = { mode: "shop", cake: CAKES[0], look: "linen", items: [], to: "", from: "", sel: null, shared: false };
+  const state = { mode: "shop", cake: CAKES[0], look: "linen", items: [], to: "", from: "", sel: null, shared: false, melt: 0, melted: false };
+  // cakes baked in this browser, so opening your own link doesn't count as them opening it
+  const MINE = "baked-ids";
+  const mine = () => { try { return JSON.parse(localStorage.getItem(MINE) || "[]"); } catch { return []; } };
+  const rememberMine = (id) => { try { localStorage.setItem(MINE, JSON.stringify([id, ...mine()].slice(0, 50))); } catch {} };
   let uid = 1;
   const sKeys = Object.keys(STYLES), wKeys = Object.keys(WAX);
   const svg = $("poster");
@@ -632,7 +669,7 @@ body.panel .stage { padding-right: 420px; }
     svg.innerHTML = posterSVG(state.cake, state.items, {
       idp: "m", look: state.look, to: state.to, from: state.from,
       lit: (it) => (receiving ? it.lit !== false : true), ignite: (it) => ignited.has(it.id),
-      dark: receiving ? (anyLit ? 0.74 : 0) : undefined,
+      dark: receiving ? (anyLit ? 0.74 : 0) : undefined, melt: receiving ? state.melt : 0,
     });
     ignited.clear();
     if (state.sel) { const g = svg.querySelector(`.item[data-id="${state.sel}"]`); g && g.classList.add("sel"); }
@@ -820,7 +857,7 @@ body.panel .stage { padding-right: 420px; }
     state.to = $("to").value.trim(); state.from = $("from").value.trim(); state.sel = null; render();
     const btn = $("wrap-go"); btn.disabled = true; btn.textContent = "Wrapping…";
     let link = "", note = "";
-    try { const { id } = await api("/api/cakes", { method: "POST", body: JSON.stringify(payload()) }, 10000); link = `${location.origin}/c/${id}`; }
+    try { const { id } = await api("/api/cakes", { method: "POST", body: JSON.stringify(payload()) }, 10000); link = `${location.origin}/c/${id}`; rememberMine(id); }
     catch { note = "Couldn't reach the oven, so this is a preview only. Try again in a moment."; }
     btn.disabled = false; btn.textContent = "Wrap it up";
     closeSheets();
@@ -837,15 +874,18 @@ body.panel .stage { padding-right: 420px; }
   function stopAudio() { audio.pause(); playing = null; }
   function receive() {
     closeSheets(); order = 0;
-    state.items.forEach((i) => { if (i.type === "candle") { i.lit = true; ignited.add(i.id); } });
+    state.items.forEach((i) => { if (i.type === "candle") { i.lit = !state.melted; if (!state.melted) ignited.add(i.id); } });
     $("ticket").hidden = true; $("recv-hint").style.opacity = 1;
+    $("recv-hint").textContent = state.melted ? "The candles burned down before anyone came to blow them out." : "Tap a candle to blow it out";
+    $("recv-hint").classList.toggle("long", state.melted);
+    $("mic").hidden = state.melted || !hasMic;
     $("exit").textContent = state.shared ? "Bake one back" : "‹ Keep decorating";
     setMode("receive");
   }
   $("preview").addEventListener("click", receive);
   $("relight").addEventListener("click", receive);
   const backToEditor = () => { closeSheets(); state.items.forEach((i) => delete i.lit); setMode("decorate"); };
-  const startOver = () => { closeSheets(); stopMic(); state.items = []; state.to = state.from = ""; state.shared = false; history.replaceState(null, "", "/"); setMode("shop"); };
+  const startOver = () => { closeSheets(); stopMic(); state.items = []; state.to = state.from = ""; state.shared = false; state.melt = 0; state.melted = false; history.replaceState(null, "", "/"); setMode("shop"); };
   $("exit").addEventListener("click", () => (state.shared ? startOver() : backToEditor()));
   $("bake").addEventListener("click", startOver);
 
@@ -919,14 +959,16 @@ body.panel .stage { padding-right: 420px; }
     if (!mic) return; cancelAnimationFrame(mic.raf); mic.stream.getTracks().forEach((t) => t.stop()); mic.ctx.close(); mic = null;
     $("mic").classList.remove("on"); $("mic").textContent = "Blow with your mic"; $("mic").disabled = false;
   }
-  $("mic").hidden = !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  const hasMic = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  $("mic").hidden = !hasMic;
   $("mic").addEventListener("click", () => (mic ? stopMic() : startMic()));
 
   // ---------- open a shared cake from /c/<id> ----------
   async function openShared(id) {
     $("shop").hidden = true; $("loading").hidden = false;
     try {
-      const c = await api(`/api/cakes?id=${encodeURIComponent(id)}`);
+      const c = await api(`/api/cakes?id=${encodeURIComponent(id)}${mine().includes(id) ? "&peek=1" : ""}`);
+      state.melt = Math.min(1, Math.max(0, +c.melt || 0)); state.melted = !!c.melted;
       state.cake = CAKES.find((k) => k.id === c.cake) || CAKES[0];
       state.look = LOOKS[c.look] ? c.look : "linen";
       state.to = c.to || ""; state.from = c.from || "";
