@@ -172,7 +172,10 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 .recv-hint { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 18px); left: 50%; translate: -50% 0; color: #ead6c8; font-family: var(--hand); font-size: 26px; z-index: 3; white-space: nowrap; pointer-events: none; transition: opacity 0.6s; }
 /* the player: a slim bar over the cake that opens into the whole playlist */
 .player { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); translate: -50% 0; width: min(440px, calc(100% - 24px)); z-index: 4; padding: 8px 10px 8px; border-radius: 20px; display: grid; gap: 10px; user-select: none; -webkit-user-select: none; }
-.ticket { display: grid; grid-template-columns: auto 1fr auto auto auto; grid-template-areas: "art text vol play list" "bar bar bar bar bar"; gap: 4px 8px; align-items: center; }
+.ticket { display: grid; grid-template-columns: auto 1fr auto auto auto auto auto; grid-template-areas: "art text vol prev play next list" "bar bar bar bar bar bar bar"; gap: 4px 6px; align-items: center; }
+#tk-prev { grid-area: prev; } #tk-next { grid-area: next; }
+.tk-icon.skip { width: 30px; height: 30px; } .tk-icon.skip svg { width: 18px; height: 18px; }
+#tk-mute .x { display: none; } #tk-mute.muted .x { display: inline; }
 .ticket .tk-art { grid-area: art; width: 40px; height: 40px; border-radius: 7px; object-fit: cover; }
 .ticket .tk-text { grid-area: text; min-width: 0; display: grid; line-height: 1.25; }
 .ticket .no { font-family: var(--hand); font-size: 15px; color: var(--brick); margin-right: 5px; }
@@ -302,10 +305,12 @@ body.panel .stage { padding-right: 420px; }
       <img class="tk-art" id="tk-art" alt="" hidden>
       <div class="tk-text"><b id="tk-song"></b><span class="tk-artist"><span class="no" id="tk-no"></span> <span id="tk-artist"></span></span></div>
       <div class="vol" id="vol">
-        <button type="button" class="tk-icon" id="tk-mute" aria-label="Volume" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path id="tk-waves" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button type="button" class="tk-icon" id="tk-mute" aria-label="Volume" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M2.5 9v6h3.8l4.7 4V5L6.3 9z" fill="currentColor"/><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path class="w" d="M13.8 10.2a2.6 2.6 0 0 1 0 3.6"/><path class="w" d="M16.2 8a5.8 5.8 0 0 1 0 8"/><path class="w" d="M18.7 5.8a9 9 0 0 1 0 12.4"/><path class="x" d="M14.5 9.5l5 5M19.5 9.5l-5 5"/></g></svg></button>
         <div class="vol-pop" id="vol-pop" hidden><input type="range" id="tk-vol" min="0" max="1" step="0.05" value="1" aria-label="Volume"></div>
       </div>
+      <button type="button" class="tk-icon skip" id="tk-prev" hidden aria-label="Previous song"><svg viewBox="0 0 24 24"><path d="M7 6v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 6.5v11L9 12z" fill="currentColor"/></svg></button>
       <button type="button" class="tk-btn" id="tk-play" aria-label="Play or pause">▶</button>
+      <button type="button" class="tk-icon skip" id="tk-next" hidden aria-label="Next song"><svg viewBox="0 0 24 24"><path d="M17 6v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6 6.5v11L15 12z" fill="currentColor"/></svg></button>
       <button type="button" class="tk-icon" id="pl-expand" hidden aria-label="Show the playlist"><svg viewBox="0 0 24 24"><path d="M4 7h11M4 12h11M4 17h7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M18 15V6l3 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16.6" cy="15.6" r="1.9" fill="currentColor"/></svg></button>
       <div class="bar"><i id="tk-bar"></i><span id="tk-time">0:00</span></div>
     </div>
@@ -1007,7 +1012,7 @@ body.panel .stage { padding-right: 420px; }
     const sm = document.createElementNS("http://www.w3.org/2000/svg", "g"); sm.setAttribute("class", "smoke");
     sm.innerHTML = `<path d="M${wx} ${wy} c-6 -14 8 -22 0 -36 s6 -24 -2 -38"/><path d="M${wx + 2} ${wy} c6 -12 -6 -20 2 -32 s-4 -20 3 -30"/>`;
     fl.parentNode.appendChild(sm);
-    it.lit = false; order++;
+    it.lit = false; order++; it.order = order;
     playing = it; setMini(it, `No. ${order}`);
     showPlayer(); $("recv-hint").style.opacity = 0;
     if (it.preview) { audio.src = it.preview; audio.currentTime = 0; audio.play().catch(() => {}); } else audio.pause();
@@ -1051,13 +1056,29 @@ body.panel .stage { padding-right: 420px; }
     const li = bar.closest("li"), it = state.items.filter((i) => i.type === "candle")[+li.dataset.i];
     seek({ currentTarget: bar, clientX: e.clientX }, it);
   });
+  // the songs you can skip between: every candle once they're all out, before that only the ones already blown out
+  const playable = () => { const cs = state.items.filter((i) => i.type === "candle"), done = !cs.some((i) => i.lit !== false); return cs.filter((i) => i.preview && (done || i.lit === false)); };
+  function skip(d) {
+    const list = playable(); if (!list.length) return;
+    if (d < 0 && audio.currentTime > 3 && playing && playing.preview) { audio.currentTime = 0; audio.play().catch(() => {}); return; }
+    const at = list.indexOf(playing), next = list[((at < 0 ? 0 : at + d) + list.length) % list.length];
+    playing = next; audio.src = next.preview; audio.currentTime = 0; audio.play().catch(() => {});
+    setMini(next, miniNo(next)); syncMenu();
+  }
+  const miniNo = (it) => (!$("pl-expand").hidden ? `No. ${state.items.filter((i) => i.type === "candle").indexOf(it) + 1}` : `No. ${it.order || 1}`);
+  $("tk-prev").addEventListener("click", () => skip(-1));
+  $("tk-next").addEventListener("click", () => skip(1));
   $("pl-collapse").addEventListener("click", () => { $("pl-full").hidden = true; syncMenu(); });
   $("pl-expand").addEventListener("click", () => { $("pl-expand").classList.remove("nudge"); $("pl-full").hidden = false; syncMenu(); });
   function showPlayer() { if (!$("player").hidden) return; $("player").hidden = false; document.body.classList.add("has-player"); fitPoster(); }
   // volume: phones like iPhone ignore page volume, so there only mute is offered
   let lastVol = 1;
   const volWorks = (() => { const a = new Audio(); try { a.volume = 0.5; } catch {} return a.volume === 0.5; })();
-  const showVol = () => { $("tk-waves").style.opacity = audio.muted || audio.volume === 0 ? "0" : String(0.35 + audio.volume * 0.65); };
+  const showVol = () => {
+    const v = audio.muted ? 0 : audio.volume, n = v === 0 ? 0 : v <= 0.34 ? 1 : v <= 0.67 ? 2 : 3;
+    $("tk-mute").querySelectorAll(".w").forEach((w, i) => (w.style.display = i < n ? "" : "none"));
+    $("tk-mute").classList.toggle("muted", n === 0);
+  };
   $("tk-vol").addEventListener("input", (e) => { audio.volume = +e.target.value; audio.muted = false; if (audio.volume > 0) lastVol = audio.volume; showVol(); });
   $("tk-mute").addEventListener("click", () => {
     if (!volWorks) { audio.muted = !audio.muted; showVol(); return; }
@@ -1096,6 +1117,7 @@ body.panel .stage { padding-right: 420px; }
   function syncMenu() {
     const cs0 = state.items.filter((i) => i.type === "candle");
     $("tk-play").textContent = playing && !audio.paused ? "❚❚" : "▶";
+    const many = playable().length > 1; $("tk-prev").hidden = $("tk-next").hidden = !many;
     if ($("pl-expand").hidden) return;
     // once it's a playlist, the mini bar shows the song's place in it, not the order the candles went out
     if (playing && $("tk-song").textContent !== playing.song) setMini(playing, "");
