@@ -123,10 +123,11 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 /* the invitation a shared link opens on: tap it to step into the dark room */
 .invite { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; align-content: center; gap: 14px; padding: max(18px, env(safe-area-inset-top, 0px)) 16px max(18px, env(safe-area-inset-bottom, 0px)); background: radial-gradient(120% 90% at 50% 40%, #2a1714 0%, #140b0a 70%); transition: opacity 0.9s ease; }
 .invite.leaving { opacity: 0; pointer-events: none; }
-.invite button { all: unset; cursor: pointer; display: block; width: min(calc(100vw - 32px), calc((100dvh - 90px) * 0.7255)); aspect-ratio: 740 / 1020; transition: transform 0.9s cubic-bezier(.5, 0, .2, 1), filter 0.3s; filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55)); }
-.invite button:hover { transform: translateY(-3px) rotate(-0.4deg); }
-.invite button:focus-visible { outline: 2px solid #e9c7d8; outline-offset: 6px; border-radius: 12px; }
-.invite.leaving button { transform: scale(1.06) translateY(-12px); }
+.invite .exit { left: max(14px, env(safe-area-inset-left, 0px)); right: auto; }
+.invite #inv-open { all: unset; cursor: pointer; display: block; width: min(calc(100vw - 32px), calc((100dvh - 90px) * 0.7255)); aspect-ratio: 740 / 1020; transition: transform 0.9s cubic-bezier(.5, 0, .2, 1), filter 0.3s; filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55)); }
+.invite #inv-open:hover { transform: translateY(-3px) rotate(-0.4deg); }
+.invite #inv-open:focus-visible { outline: 2px solid #e9c7d8; outline-offset: 6px; border-radius: 12px; }
+.invite.leaving #inv-open { transform: scale(1.06) translateY(-12px); }
 .invite svg { width: 100%; height: 100%; display: block; }
 .invite p { margin: 0; color: #d9b9c4; font: 500 22px var(--hand); letter-spacing: 0.02em; animation: breathe 2.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .invite button, .invite { transition: none; } .invite p { animation: none; } }
@@ -195,6 +196,7 @@ body.panel .stage { padding-right: 420px; }
 
 <div class="loading" id="loading" hidden>Unwrapping…</div>
 <div class="invite" id="invite" hidden>
+  <button type="button" class="exit" id="inv-back" hidden>‹ Back</button>
   <button type="button" id="inv-open" aria-label="Open the invitation"><svg id="inv-svg" viewBox="0 0 740 1020" aria-hidden="true"></svg></button>
   <p>Tap the invitation to step inside</p>
 </div>
@@ -279,7 +281,7 @@ body.panel .stage { padding-right: 420px; }
     <button type="button" class="x" data-close aria-label="Close">×</button>
     <h3 id="sent-title"></h3>
     <p>The songs stay a secret until they blow the candles out. The candles start burning now: if the link sits unopened for 7 days, they burn down and the songs go with them.</p>
-    <div class="link" id="link"></div>
+    <div class="link" id="link" hidden></div>
     <p class="muted" id="sent-note" hidden></p>
     <div class="pair"><button type="button" class="btn" id="copy">Copy link</button><button type="button" class="btn" id="share">Share…</button></div>
     <button type="button" class="btn red" id="preview">See it as them</button>
@@ -873,18 +875,23 @@ body.panel .stage { padding-right: 420px; }
   $("wrap-go").addEventListener("click", async () => {
     state.to = $("to").value.trim(); state.from = $("from").value.trim(); state.sel = null; render();
     const btn = $("wrap-go"); btn.disabled = true; btn.textContent = "Wrapping…";
-    let link = "", note = "";
-    try { const { id } = await api("/api/cakes", { method: "POST", body: JSON.stringify(payload()) }, 10000); link = `${location.origin}/c/${id}`; rememberMine(id); }
+    let link = "", note = ""; state.link = "";
+    try { const { id } = await api("/api/cakes", { method: "POST", body: JSON.stringify(payload()) }, 10000); link = `${location.origin}/c/${id}`; state.link = link; rememberMine(id); }
     catch { note = "Couldn't reach the oven, so this is a preview only. Try again in a moment."; }
     btn.disabled = false; btn.textContent = "Wrap it up";
     closeSheets();
     $("sent-title").textContent = `Your playlist for ${state.to || "them"} is out of the oven.`;
-    $("link").textContent = link || "—"; $("link").hidden = !link; $("copy").hidden = !link; $("share").hidden = !link || !navigator.share;
+    $("link").textContent = link; $("link").hidden = true; $("copy").textContent = "Copy link"; $("copy").hidden = !link; $("share").hidden = !link || !navigator.share;
     $("sent-note").textContent = note; $("sent-note").hidden = !note;
     $("s-sent").hidden = false;
   });
-  $("copy").addEventListener("click", () => { (navigator.clipboard ? navigator.clipboard.writeText($("link").textContent) : Promise.reject()).then(() => ($("copy").textContent = "Copied ♡"), () => { const r = document.createRange(); r.selectNodeContents($("link")); getSelection().removeAllRanges(); getSelection().addRange(r); }); });
-  $("share").addEventListener("click", () => { navigator.share({ title: "Someone Baked You a Playlist", text: `${state.from || "Someone"} baked you a playlist ♡`, url: $("link").textContent }).catch(() => {}); });
+  // the link stays out of sight; it only appears (selected, ready to copy by hand) if the clipboard is unavailable
+  $("copy").addEventListener("click", () => {
+    (navigator.clipboard ? navigator.clipboard.writeText(state.link) : Promise.reject()).then(() => { $("copy").textContent = "Copied ♡"; setTimeout(() => ($("copy").textContent = "Copy link"), 2200); }, () => {
+      $("link").hidden = false; const r = document.createRange(); r.selectNodeContents($("link")); getSelection().removeAllRanges(); getSelection().addRange(r);
+    });
+  });
+  $("share").addEventListener("click", () => { navigator.share({ title: "Someone Baked You a Playlist", text: `${state.from || "Someone"} baked you a playlist ♡`, url: state.link }).catch(() => {}); });
 
   // ---------- receive: blow out a candle, hear its song ----------
   let playing = null, order = 0;
@@ -896,14 +903,20 @@ body.panel .stage { padding-right: 420px; }
     $("recv-hint").textContent = state.melted ? "The candles burned down before anyone came to blow them out." : "Tap a candle to blow it out";
     $("recv-hint").classList.toggle("long", state.melted);
     $("mic").hidden = state.melted || !hasMic;
-    $("exit").textContent = state.shared ? "Bake one back" : "‹ Keep decorating";
+    $("exit").textContent = state.shared ? "Bake one back" : "‹ Back";
     setMode("receive");
   }
-  $("preview").addEventListener("click", () => showInvite(inviteFromState({ at: Date.now() })));
+  $("preview").addEventListener("click", () => { history.pushState({ preview: true }, ""); showInvite(inviteFromState({ at: Date.now() })); });
   $("relight").addEventListener("click", receive);
-  const backToEditor = () => { closeSheets(); state.items.forEach((i) => delete i.lit); setMode("decorate"); };
-  const startOver = () => { closeSheets(); stopMic(); state.items = []; state.to = state.from = ""; state.shared = false; state.melt = 0; state.melted = false; history.replaceState(null, "", "/"); setMode("shop"); };
-  $("exit").addEventListener("click", () => (state.shared ? startOver() : backToEditor()));
+  const backToEditor = () => {
+    closeSheets(); stopMic(); $("invite").hidden = true; state.items.forEach((i) => delete i.lit); setMode("decorate");
+    if (state.link) $("s-sent").hidden = false; // back where they left off: the link, ready to copy or share
+  };
+  const leavePreview = () => (history.state && history.state.preview ? history.back() : backToEditor());
+  addEventListener("popstate", () => { if (state.mode === "receive" && !state.shared) backToEditor(); });
+  $("inv-back").addEventListener("click", leavePreview);
+  const startOver = () => { closeSheets(); stopMic(); state.link = ""; state.items = []; state.to = state.from = ""; state.shared = false; state.melt = 0; state.melted = false; history.replaceState(null, "", "/"); setMode("shop"); };
+  $("exit").addEventListener("click", () => (state.shared ? startOver() : leavePreview()));
   $("bake").addEventListener("click", startOver);
 
   function blowOut(it) {
@@ -1109,7 +1122,7 @@ body.panel .stage { padding-right: 420px; }
   }
   function showInvite(o) {
     $("inv-svg").innerHTML = inviteSVG(o);
-    const inv = $("invite"); inv.classList.remove("leaving"); inv.hidden = false;
+    const inv = $("invite"); inv.classList.remove("leaving"); inv.hidden = false; $("inv-back").hidden = state.shared;
     receive();
   }
   $("inv-open").addEventListener("click", () => {
