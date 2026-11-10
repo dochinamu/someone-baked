@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#cdb5ab">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&family=UnifrakturMaguntia&family=Nanum+Brush+Script&family=Yellowtail&family=Pinyon+Script&family=Gloock&family=Limelight&family=Anton&family=Caveat:wght@500;600&family=Cormorant+Garamond:wght@600;700&family=Cinzel:wght@500;600&family=Bellefair&family=Oswald:wght@500&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&family=UnifrakturMaguntia&family=Yellowtail&family=Pinyon+Script&family=Gloock&family=Limelight&family=Anton&family=Caveat:wght@500;600&family=Cormorant+Garamond:wght@600;700&family=Cinzel:wght@500;600&family=Bellefair&family=Oswald:wght@500&family=IBM+Plex+Sans:wght@400;500&family=Diphylleia&family=Gowun+Batang:wght@400;700&family=Song+Myung&family=East+Sea+Dokdo&family=Black+Han+Sans&family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Pen+Script&display=swap">
 <style>
 /* layout: shop (a wall of cut-out cakes) -> poster editor (poster centre, dock right, drawer left)
    -> receive (same poster, lights off). Everything sits in a dusky rose room. */
@@ -23,9 +23,9 @@
   --soft: #7d6a66;
   --brick: #b23a36;
   --glass: rgba(238, 228, 222, 0.8);
-  --ui: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
-  --hand: "Caveat", "Bradley Hand", cursive;
-  --script: "Yellowtail", "Brush Script MT", cursive;
+  --ui: "IBM Plex Sans", "IBM Plex Sans KR", "Helvetica Neue", Arial, sans-serif;
+  --hand: "Caveat", "Nanum Pen Script", "Bradley Hand", cursive;
+  --script: "Yellowtail", "Diphylleia", "Brush Script MT", cursive;
   color-scheme: light;
 }
 * { box-sizing: border-box; }
@@ -485,7 +485,7 @@ body.panel .stage { padding-right: 420px; }
 
   // ---------- the poster ----------
   // Each look is a poster style: a box the cake sits in, what's printed behind it, and what's printed in front.
-  const sans = `font-family="IBM Plex Sans, Helvetica, sans-serif"`;
+  const sans = `font-family="IBM Plex Sans, IBM Plex Sans KR, Helvetica, sans-serif"`;
   const lines = (x, y, dy, arr, attrs) => `<text ${attrs}>${arr.map((t, i) => `<tspan x="${x}" y="${y + i * dy}">${esc(t)}</tspan>`).join("")}</text>`;
   // hand-painted lettering: a marker font, thickened and wobbled, every letter tilted and lifted a little
   function jitter(str, seed, a = 6, b = 5) {
@@ -498,7 +498,7 @@ body.panel .stage { padding-right: 420px; }
   function brushText(rows, o) {
     const { idp, x = 400, y = 150, gap = 118, size = 112, w = 700, fill = "#1d1515" } = o;
     return `<defs><filter id="${idp}brush" x="-6%" y="-20%" width="112%" height="140%"><feMorphology operator="dilate" radius="${(size / 50).toFixed(2)}"/><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="4" result="t"/><feDisplacementMap in2="t" scale="${(size / 22).toFixed(1)}" in="SourceGraphic"/></filter></defs>
-      <g filter="url(#${idp}brush)" fill="${fill}" font-family="Sedgwick Ave Display, Nanum Brush Script, cursive" text-anchor="middle">${rows.map((t, i) => {
+      <g filter="url(#${idp}brush)" fill="${fill}" font-family="Sedgwick Ave Display, East Sea Dokdo, cursive" text-anchor="middle">${rows.map((t, i) => {
         const fs = Math.min(size, (w * 0.95) / (Math.max(t.length, 4) * 0.5));
         return `<text x="${x}" y="${y + i * gap}" font-size="${fs.toFixed(0)}" letter-spacing="1" ${jitter(t, seedOf(t))}>${esc(t)}</text>`;
       }).join("")}</g>`;
@@ -515,10 +515,10 @@ body.panel .stage { padding-right: 420px; }
         return `<defs><pattern id="${c.idp}lin" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#ebe6dc"/><path d="M0 .5H6M0 3.5H6" stroke="#d8d0c2" stroke-width=".6"/><path d="M.5 0V6M3.5 0V6" stroke="#e0d9cc" stroke-width=".5"/></pattern>
           <radialGradient id="${c.idp}vig" cx=".5" cy=".45" r=".75"><stop offset=".55" stop-color="#6b5a48" stop-opacity="0"/><stop offset="1" stop-color="#6b5a48" stop-opacity=".22"/></radialGradient></defs>
           <rect width="${W}" height="${H}" fill="url(#${c.idp}lin)"/><rect width="${W}" height="${H}" fill="url(#${c.idp}vig)"/>
-          <text x="400" y="168" text-anchor="middle" font-family="Pinyon Script, cursive" font-size="${fs.toFixed(0)}" fill="${red}">${esc(head)}</text>
-          <text x="${left.toFixed(0)}" y="236" font-family="Cormorant Garamond, Georgia, serif" font-weight="700" font-size="46" fill="${red}">You a Playlist</text>
-          ${lines(58, 902, 31, ["Take your pick from a little", "list of songs, baked just", `for ${c.to || "you"}`], `font-family="Cormorant Garamond, Georgia, serif" font-weight="600" font-size="28" fill="${red}"`)}
-          ${lines(744, 961, 28, ["Blow to listen"], `text-anchor="end" font-family="Cormorant Garamond, Georgia, serif" font-weight="600" font-size="26" fill="${red}"`)}`;
+          <text x="400" y="168" text-anchor="middle" font-family="Pinyon Script, Diphylleia, cursive" font-size="${fs.toFixed(0)}" fill="${red}">${esc(head)}</text>
+          <text x="${left.toFixed(0)}" y="236" font-family="Cormorant Garamond, Gowun Batang, Georgia, serif" font-weight="700" font-size="46" fill="${red}">You a Playlist</text>
+          ${lines(58, 902, 31, ["Take your pick from a little", "list of songs, baked just", `for ${c.to || "you"}`], `font-family="Cormorant Garamond, Gowun Batang, Georgia, serif" font-weight="600" font-size="28" fill="${red}"`)}
+          ${lines(744, 961, 28, ["Blow to listen"], `text-anchor="end" font-family="Cormorant Garamond, Gowun Batang, Georgia, serif" font-weight="600" font-size="26" fill="${red}"`)}`;
       },
     },
     emerald: {
@@ -530,8 +530,8 @@ body.panel .stage { padding-right: 420px; }
           <path id="${c.idp}arc" d="M70 450 Q400 40 730 450"/></defs>
           <rect width="${W}" height="${H}" fill="url(#${c.idp}em)"/>
           <text x="400" y="72" text-anchor="middle" ${sans} font-weight="500" font-size="16" letter-spacing="1" fill="${y}">${esc(`BAKED BY ${c.who.toUpperCase()}`)}</text>
-          <text font-family="Gloock, Georgia, serif" font-size="${fs.toFixed(0)}" letter-spacing="2" fill="${y}"><textPath href="#${c.idp}arc" startOffset="50%" text-anchor="middle">${esc(arc)}</textPath></text>
-          <text x="400" y="318" text-anchor="middle" font-family="Gloock, Georgia, serif" font-size="34" letter-spacing="1" fill="${y}">YOU A PLAYLIST</text>
+          <text font-family="Gloock, Song Myung, Georgia, serif" font-size="${fs.toFixed(0)}" letter-spacing="2" fill="${y}"><textPath href="#${c.idp}arc" startOffset="50%" text-anchor="middle">${esc(arc)}</textPath></text>
+          <text x="400" y="318" text-anchor="middle" font-family="Gloock, Song Myung, Georgia, serif" font-size="34" letter-spacing="1" fill="${y}">YOU A PLAYLIST</text>
           ${lines(400, 348, 19, ["A LITTLE SOMETHING SWEET", "FOR YOUR EARS"], `text-anchor="middle" ${sans} font-size="15" fill="${y}"`)}
           <ellipse cx="104" cy="488" rx="54" ry="19" fill="none" stroke="${y}" stroke-width="1.6"/><text x="104" y="494" text-anchor="middle" ${sans} font-size="15" fill="${y}">FRESHLY</text>
           <ellipse cx="696" cy="488" rx="54" ry="19" fill="none" stroke="${y}" stroke-width="1.6"/><text x="696" y="494" text-anchor="middle" ${sans} font-size="15" fill="${y}">BAKED</text>
@@ -572,7 +572,7 @@ body.panel .stage { padding-right: 420px; }
           <path d="${frame(4)}" fill="none" stroke="${gold}" stroke-width="1.6"/>
           ${scroll(400, Y0 - 8, 1.5, 1.5)}${scroll(400, Y1 + 8, 1.5, -1.5)}
           ${side(X0 - 4, 1)}${side(X1 + 4, -1)}
-          <text font-family="UnifrakturMaguntia, Georgia, serif" font-size="${fs.toFixed(0)}" fill="${teal}"><tspan x="168" y="236">${esc(head)}</tspan><tspan x="200" y="${(236 + fs * 1.05).toFixed(0)}">You a Playlist</tspan></text>`;
+          <text font-family="UnifrakturMaguntia, Song Myung, Georgia, serif" font-size="${fs.toFixed(0)}" fill="${teal}"><tspan x="168" y="236">${esc(head)}</tspan><tspan x="200" y="${(236 + fs * 1.05).toFixed(0)}">You a Playlist</tspan></text>`;
       },
     },
     velvet: {
@@ -589,8 +589,8 @@ body.panel .stage { padding-right: 420px; }
         const red = "#a8141c", head = `${c.who} Baked You`, fs = Math.min(46, 300 / (head.length * 0.36));
         return `<g><ellipse cx="400" cy="860" rx="182" ry="66" fill="#f6ecdc" stroke="${red}" stroke-width="2"/><ellipse cx="400" cy="860" rx="172" ry="57" fill="none" stroke="${red}" stroke-width=".9"/>
           <circle cx="240" cy="852" r="4.5" fill="${red}"/><circle cx="560" cy="852" r="4.5" fill="${red}"/>
-          <text x="400" y="862" text-anchor="middle" font-family="Yellowtail, cursive" font-size="${fs.toFixed(0)}" fill="${red}">${esc(head)}</text>
-          <text x="400" y="890" text-anchor="middle" ${sans} font-size="14" fill="${red}">a playlist, <tspan font-family="Yellowtail, cursive" font-size="17">warmly</tspan> served</text></g>`;
+          <text x="400" y="862" text-anchor="middle" font-family="Yellowtail, Diphylleia, cursive" font-size="${fs.toFixed(0)}" fill="${red}">${esc(head)}</text>
+          <text x="400" y="890" text-anchor="middle" ${sans} font-size="14" fill="${red}">a playlist, <tspan font-family="Yellowtail, Diphylleia, cursive" font-size="17">warmly</tspan> served</text></g>`;
       },
     },
     candy: {
@@ -603,8 +603,8 @@ body.panel .stage { padding-right: 420px; }
           <rect width="${W}" height="${H}" fill="url(#${c.idp}cs)"/>
           <rect width="${W}" height="${H}" filter="url(#${c.idp}crumple)" opacity=".25" style="mix-blend-mode:multiply"/>
           <rect x="22" y="22" width="756" height="956" fill="none" stroke="${red}" stroke-width="2"/>
-          <text x="400" y="300" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="168" letter-spacing="2" fill="#8fa862" opacity=".88">PLAYLIST</text>
-          <text x="400" y="232" text-anchor="middle" font-family="Pinyon Script, cursive" font-size="${fs.toFixed(0)}" fill="${red}" stroke="#f6e7cf" stroke-width="4" paint-order="stroke" transform="rotate(-3 400 232)">${esc(head)}</text>
+          <text x="400" y="300" text-anchor="middle" font-family="Anton, Black Han Sans, Impact, sans-serif" font-size="168" letter-spacing="2" fill="#8fa862" opacity=".88">PLAYLIST</text>
+          <text x="400" y="232" text-anchor="middle" font-family="Pinyon Script, Diphylleia, cursive" font-size="${fs.toFixed(0)}" fill="${red}" stroke="#f6e7cf" stroke-width="4" paint-order="stroke" transform="rotate(-3 400 232)">${esc(head)}</text>
           ${arrow("M655 330 C712 384 706 470 622 528", 622, 528, 40)}
           ${lines(48, 938, 18, [`BAKED BY ${c.who.toUpperCase()}`, `FOR ${(c.to || "YOU").toUpperCase()}`], `${sans} font-weight="500" font-size="13" fill="${red}"`)}
           <text x="752" y="956" text-anchor="end" ${sans} font-size="16" fill="${red}">♡</text>`;
@@ -1197,17 +1197,17 @@ body.panel .stage { padding-right: 420px; }
     const nameSize = Math.min(92, 480 / Math.max(3, to.length * 0.5));
     const left = (o.at || Date.now()) + 7 * 864e5 - Date.now();
     const candles = o.melted ? "BURNED DOWN" : o.openedAt ? "STILL LIT" : left < 864e5 ? `MELT IN ${Math.max(1, Math.ceil(left / 36e5))} HOUR${left <= 36e5 ? "" : "S"}` : `MELT IN ${Math.ceil(left / 864e5)} DAYS`;
-    const caps = `font-family="Cinzel, 'Cormorant Garamond', serif" font-weight="500" fill="${INK}"`, info = `font-family="Oswald, 'Arial Narrow', sans-serif" font-weight="500" font-size="25" fill="${INK}" text-anchor="middle" letter-spacing="1"`;
+    const caps = `font-family="Cinzel, 'Cormorant Garamond', Gowun Batang, serif" font-weight="500" fill="${INK}"`, info = `font-family="Oswald, Do Hyeon, 'Arial Narrow', sans-serif" font-weight="500" font-size="25" fill="${INK}" text-anchor="middle" letter-spacing="1"`;
     return `${laceSVG()}
       <defs><path id="iv-arc" d="M140 300 Q370 140 600 300"/></defs>
       <text ${caps} font-size="${Math.min(31, (31 * 22) / (from.length + 17)).toFixed(1)}" letter-spacing="2.5"><textPath href="#iv-arc" startOffset="50%" text-anchor="middle">${esc(from)} BAKED A CAKE FOR</textPath></text>
-      <text x="370" y="${330 + nameSize * 0.18}" text-anchor="middle" font-family="'Pinyon Script', cursive" font-size="${nameSize.toFixed(0)}" fill="${INK}">${esc(to)}</text>
+      <text x="370" y="${330 + nameSize * 0.18}" text-anchor="middle" font-family="'Pinyon Script', Diphylleia, cursive" font-size="${nameSize.toFixed(0)}" fill="${INK}">${esc(to)}</text>
       ${sparkle(560, 360, 11)}${sparkle(578, 384, 6)}${sparkle(176, 462, 10)}${sparkle(194, 482, 6)}${sparkle(546, 600, 9)}${sparkle(562, 624, 6)}
       ${inviteCakeSVG(o.n, o.melt, o.melted)}
-      <text x="370" y="758" text-anchor="middle" font-family="Bellefair, 'Cormorant Garamond', serif" font-size="54" fill="${INK}" letter-spacing="1">${o.n} SONG${o.n === 1 ? "" : "S"} INSIDE</text>
+      <text x="370" y="758" text-anchor="middle" font-family="Bellefair, 'Cormorant Garamond', Gowun Batang, serif" font-size="54" fill="${INK}" letter-spacing="1">${o.n} SONG${o.n === 1 ? "" : "S"} INSIDE</text>
       <text x="370" y="808" ${info}>BAKED : ${String(d.getDate()).padStart(2, "0")} | ${MONTHS[d.getMonth()]} | ${d.getFullYear()}</text>
       <text x="370" y="848" ${info}>CANDLES : ${candles}</text>
-      <text x="370" y="888" text-anchor="middle" font-family="'Pinyon Script', cursive" font-size="27" fill="${INK}">${o.melted ? "you came a little late" : "blow them out to hear the songs"}</text>`;
+      <text x="370" y="888" text-anchor="middle" font-family="'Pinyon Script', Diphylleia, cursive" font-size="27" fill="${INK}">${o.melted ? "you came a little late" : "blow them out to hear the songs"}</text>`;
   }
   function showInvite(o) {
     $("inv-svg").innerHTML = inviteSVG(o);
