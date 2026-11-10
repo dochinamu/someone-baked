@@ -7,7 +7,11 @@
 <meta name="description" content="Pick a cake, stick songs in as candles, and send it. They blow out the candles to hear what you baked them.">
 <meta property="og:title" content="Someone Baked You a Playlist">
 <meta property="og:description" content="Blow out the candles to hear the songs ♡">
-<meta property="og:image" content="/og.jpg">
+<meta property="og:image" content="https://someone-baked.vercel.app/og-invite.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Someone Baked You a Playlist">
+<meta name="twitter:image" content="https://someone-baked.vercel.app/og-invite.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#cdb5ab">
@@ -33,6 +37,7 @@
 html, body { height: 100%; }
 body { margin: 0; overflow: hidden; color: var(--ink); font-family: var(--ui); font-size: 14px; line-height: 1.5; background: radial-gradient(120% 90% at 50% 40%, #d8c3b9 0%, var(--room) 55%, #a98f86 100%); transition: background 0.9s ease; }
 body.dark { background: #1a110f; }
+body.receiving.has-player .stage { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); }
 .glass { background: var(--glass); -webkit-backdrop-filter: blur(22px) saturate(1.2); backdrop-filter: blur(22px) saturate(1.2); border-radius: 22px; box-shadow: 0 10px 40px rgba(40, 20, 20, 0.12); }
 
 /* shop */
@@ -166,22 +171,27 @@ input[type="text"]:focus { outline: 2px solid var(--brick); }
 .recv-hint.long { white-space: normal; width: min(88vw, 520px); text-align: center; line-height: 1.15; }
 .recv-hint { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 18px); left: 50%; translate: -50% 0; color: #ead6c8; font-family: var(--hand); font-size: 26px; z-index: 3; white-space: nowrap; pointer-events: none; transition: opacity 0.6s; }
 /* the player: a slim bar over the cake that opens into the whole playlist */
-.player { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); translate: -50% 0; width: min(440px, calc(100% - 24px)); z-index: 4; padding: 10px 12px; border-radius: 20px; display: grid; gap: 10px; user-select: none; -webkit-user-select: none; }
-.ticket { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "art text play" "bar bar bar" "vol vol open"; gap: 6px 12px; align-items: center; }
-.ticket .tk-art { grid-area: art; width: 46px; height: 46px; border-radius: 8px; object-fit: cover; }
-.ticket .tk-text { grid-area: text; min-width: 0; display: grid; line-height: 1.2; }
-.ticket .no { font-family: var(--hand); font-size: 17px; color: var(--brick); line-height: 1; }
-.ticket b { font-weight: 500; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ticket .tk-artist { font-size: 12.5px; color: var(--soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tk-btn { grid-area: play; width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--brick); color: #fff; font-size: 13px; cursor: pointer; display: grid; place-items: center; }
+.player { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); translate: -50% 0; width: min(440px, calc(100% - 24px)); z-index: 4; padding: 8px 10px 8px; border-radius: 20px; display: grid; gap: 10px; user-select: none; -webkit-user-select: none; }
+.ticket { display: grid; grid-template-columns: auto 1fr auto auto auto; grid-template-areas: "art text vol play list" "bar bar bar bar bar"; gap: 4px 8px; align-items: center; }
+.ticket .tk-art { grid-area: art; width: 40px; height: 40px; border-radius: 7px; object-fit: cover; }
+.ticket .tk-text { grid-area: text; min-width: 0; display: grid; line-height: 1.25; }
+.ticket .no { font-family: var(--hand); font-size: 15px; color: var(--brick); margin-right: 5px; }
+.ticket b { font-weight: 500; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ticket .tk-artist { font-size: 12px; color: var(--soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-btn { grid-area: play; width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--brick); color: #fff; font-size: 12px; cursor: pointer; display: grid; place-items: center; }
 .tk-btn:disabled { opacity: .35; cursor: default; }
-.tk-btn.small { width: 28px; height: 28px; background: transparent; color: var(--ink); font-size: 14px; }
-.ticket .bar { grid-area: bar; display: flex; gap: 8px; align-items: center; font-size: 11.5px; color: var(--soft); font-variant-numeric: tabular-nums; }
-.ticket .bar i { flex: 1; height: 3px; background: rgba(0, 0, 0, 0.12); position: relative; overflow: hidden; border-radius: 2px; }
+.tk-icon { width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.tk-icon:hover { background: rgba(255, 255, 255, .6); }
+.tk-icon svg { width: 21px; height: 21px; }
+#pl-expand { grid-area: list; }
+#pl-expand.nudge { animation: nudge 1.2s ease-in-out 4; background: rgba(255, 255, 255, .8); color: var(--brick); }
+@keyframes nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.ticket .bar { grid-area: bar; display: flex; gap: 8px; align-items: center; font-size: 10.5px; color: var(--soft); font-variant-numeric: tabular-nums; }
+.ticket .bar i { flex: 1; height: 2.5px; background: rgba(0, 0, 0, 0.12); position: relative; overflow: hidden; border-radius: 2px; }
 .ticket .bar i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); background: var(--brick); }
-.vol { grid-area: vol; display: flex; align-items: center; gap: 4px; }
-.vol input { width: 92px; accent-color: var(--brick); }
-.pl-open { grid-area: open; justify-self: end; border: 0; border-radius: 999px; padding: 6px 12px; background: rgba(255, 255, 255, .75); font: 500 12.5px var(--ui); color: var(--ink); cursor: pointer; }
+.vol { grid-area: vol; position: relative; }
+.vol-pop { position: absolute; bottom: calc(100% + 10px); left: 50%; translate: -50% 0; padding: 10px 14px; border-radius: 14px; background: rgba(246, 240, 236, .97); box-shadow: 0 6px 18px rgba(0, 0, 0, .18); }
+.vol-pop input { width: 120px; accent-color: var(--brick); display: block; }
 .pl-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
 .pl-head h3 { margin: 0; }
 .pl-fold { border: 0; width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, .75); font-size: 18px; line-height: 1; cursor: pointer; color: var(--ink); }
@@ -287,11 +297,14 @@ body.panel .stage { padding-right: 420px; }
     </div>
     <div class="ticket" id="ticket">
       <img class="tk-art" id="tk-art" alt="" hidden>
-      <div class="tk-text"><span class="no" id="tk-no"></span><b id="tk-song"></b><span class="tk-artist" id="tk-artist"></span></div>
+      <div class="tk-text"><b id="tk-song"></b><span class="tk-artist"><span class="no" id="tk-no"></span> <span id="tk-artist"></span></span></div>
+      <div class="vol" id="vol">
+        <button type="button" class="tk-icon" id="tk-mute" aria-label="Volume" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path id="tk-waves" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <div class="vol-pop" id="vol-pop" hidden><input type="range" id="tk-vol" min="0" max="1" step="0.05" value="1" aria-label="Volume"></div>
+      </div>
       <button type="button" class="tk-btn" id="tk-play" aria-label="Play or pause">▶</button>
+      <button type="button" class="tk-icon" id="pl-expand" hidden aria-label="Show the playlist"><svg viewBox="0 0 24 24"><path d="M4 7h11M4 12h11M4 17h7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M18 15V6l3 1.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16.6" cy="15.6" r="1.9" fill="currentColor"/></svg></button>
       <div class="bar"><i id="tk-bar"></i><span id="tk-time">0:00</span></div>
-      <div class="vol"><button type="button" class="tk-btn small" id="tk-mute" aria-label="Mute">🔊</button><input type="range" id="tk-vol" min="0" max="1" step="0.05" value="1" aria-label="Volume"></div>
-      <button type="button" class="pl-open" id="pl-expand" hidden aria-label="Show the playlist">playlist ⌃</button>
     </div>
   </div>
 </div>
@@ -614,7 +627,7 @@ body.panel .stage { padding-right: 420px; }
       name: "Candy", swatch: "repeating-linear-gradient(90deg,#efafa6 0 5px,#f6e7cf 5px 10px)",
       box: { bottom: 872, w: 540, h: 520 },
       back(c) {
-        const red = "#c0182a", head = `${c.who} Baked You`, fs = Math.min(88, 660 / (head.length * 0.46));
+        const red = "#c0182a", head = "Baked for You", fs = Math.min(88, 660 / (head.length * 0.46));
         const arrow = (d, hx, hy, a) => `<path d="${d}" fill="none" stroke="${red}" stroke-width="2"/><path d="M${hx} ${hy} l-12 -5 M${hx} ${hy} l-6 -11" stroke="${red}" stroke-width="2" fill="none" transform="rotate(${a} ${hx} ${hy})"/>`;
         return `<defs><pattern id="${c.idp}cs" width="100" height="10" patternUnits="userSpaceOnUse"><rect width="100" height="10" fill="#f6e7cf"/><rect width="50" height="10" fill="#efafa6"/></pattern></defs>
           <rect width="${W}" height="${H}" fill="url(#${c.idp}cs)"/>
@@ -734,6 +747,7 @@ body.panel .stage { padding-right: 420px; }
       lit: (it) => (receiving ? it.lit !== false : true), ignite: (it) => ignited.has(it.id),
       dark: receiving ? (anyLit ? 0.74 : 0) : undefined, melt: receiving ? state.melt : 0,
     });
+    document.body.classList.toggle("dark", receiving && anyLit);
     ignited.clear();
     if (state.sel) { const g = svg.querySelector(`.item[data-id="${state.sel}"]`); g && g.classList.add("sel"); }
     positionSelbar();
@@ -962,7 +976,8 @@ body.panel .stage { padding-right: 420px; }
   function receive() {
     closeSheets(); order = 0;
     state.items.forEach((i) => { if (i.type === "candle") { i.lit = !state.melted; if (!state.melted) ignited.add(i.id); } });
-    $("player").hidden = true; $("pl-full").hidden = true; $("pl-expand").hidden = true; $("recv-hint").style.opacity = 1;
+    $("player").hidden = true; $("pl-full").hidden = true; $("pl-expand").hidden = true; $("pl-expand").classList.remove("nudge"); $("vol-pop").hidden = true;
+    document.body.classList.remove("has-player"); $("recv-hint").style.opacity = 1;
     $("recv-hint").textContent = state.melted ? "The candles burned down before anyone came to blow them out." : "Tap a candle to blow it out";
     $("recv-hint").classList.toggle("long", state.melted);
     $("mic").hidden = state.melted || !hasMic;
@@ -991,7 +1006,7 @@ body.panel .stage { padding-right: 420px; }
     fl.parentNode.appendChild(sm);
     it.lit = false; order++;
     playing = it; setMini(it, `No. ${order}`);
-    $("player").hidden = false; $("recv-hint").style.opacity = 0;
+    showPlayer(); $("recv-hint").style.opacity = 0;
     if (it.preview) { audio.src = it.preview; audio.currentTime = 0; audio.play().catch(() => {}); } else audio.pause();
     const left = state.items.filter((i) => i.type === "candle" && i.lit !== false).length;
     setTimeout(() => { if (state.mode === "receive") render(); if (!left) setTimeout(showMenu, 1800); }, 1400);
@@ -1021,18 +1036,18 @@ body.panel .stage { padding-right: 420px; }
     else { if (audio.src !== playing.preview) { audio.src = playing.preview; audio.currentTime = 0; } audio.play().catch(() => {}); }
   });
   $("pl-collapse").addEventListener("click", () => { $("pl-full").hidden = true; syncMenu(); });
-  $("pl-expand").addEventListener("click", () => { $("pl-full").hidden = false; syncMenu(); });
+  $("pl-expand").addEventListener("click", () => { $("pl-expand").classList.remove("nudge"); $("pl-full").hidden = false; syncMenu(); });
+  function showPlayer() { if (!$("player").hidden) return; $("player").hidden = false; document.body.classList.add("has-player"); fitPoster(); }
   // volume: phones like iPhone ignore page volume, so there only mute is offered
   let lastVol = 1;
   const volWorks = (() => { const a = new Audio(); try { a.volume = 0.5; } catch {} return a.volume === 0.5; })();
-  $("tk-vol").hidden = !volWorks;
-  const showVol = () => ($("tk-mute").textContent = audio.muted || audio.volume === 0 ? "🔈" : "🔊");
+  const showVol = () => { $("tk-waves").style.opacity = audio.muted || audio.volume === 0 ? "0" : String(0.35 + audio.volume * 0.65); };
   $("tk-vol").addEventListener("input", (e) => { audio.volume = +e.target.value; audio.muted = false; if (audio.volume > 0) lastVol = audio.volume; showVol(); });
   $("tk-mute").addEventListener("click", () => {
-    if (volWorks) { const off = audio.volume > 0 && !audio.muted; audio.muted = false; audio.volume = off ? 0 : lastVol || 1; $("tk-vol").value = audio.volume; }
-    else audio.muted = !audio.muted;
-    showVol();
+    if (!volWorks) { audio.muted = !audio.muted; showVol(); return; }
+    const open = $("vol-pop").hidden; $("vol-pop").hidden = !open; $("tk-mute").setAttribute("aria-expanded", String(open));
   });
+  document.addEventListener("pointerdown", (e) => { if (!$("vol-pop").hidden && !$("vol").contains(e.target)) { $("vol-pop").hidden = true; $("tk-mute").setAttribute("aria-expanded", "false"); } });
   // small "open in" marks for each service
   const SVC = {
     spotify: ["Spotify", `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#1db954"/><path d="M6.5 9.3c3.8-1.1 8-.8 11 1M7.2 12.4c3.1-.8 6.5-.5 9 .9M7.8 15.3c2.5-.6 5-.4 7 .7" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>`],
@@ -1055,7 +1070,9 @@ body.panel .stage { padding-right: 420px; }
       </li>`;
     }).join("");
     $("bake").textContent = state.shared ? "Bake one back" : "Bake another";
-    $("player").hidden = false; $("pl-full").hidden = false; $("pl-expand").hidden = false;
+    // the playlist is ready, but it waits to be opened instead of jumping over the cake
+    showPlayer(); $("pl-expand").hidden = false; $("pl-expand").classList.add("nudge");
+    $("pl-expand").setAttribute("aria-label", "Your playlist is ready: show it");
     syncMenu();
   }
   // the playlist mirrors whatever is playing, and carries on to the next song when one ends
