@@ -1162,22 +1162,34 @@ body.panel .stage { padding-right: 420px; }
   let mic = null;
   async function startMic() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+      // echo cancellation keeps the song coming out of the speaker from counting as a blow
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: false, autoGainControl: false } });
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const src = ctx.createMediaStreamSource(stream), an = ctx.createAnalyser(); an.fftSize = 1024; an.smoothingTimeConstant = 0.2; src.connect(an);
-      const bins = new Uint8Array(an.frequencyBinCount), hiBin = Math.ceil(1000 / (ctx.sampleRate / an.fftSize));
-      mic = { stream, ctx, raf: 0, since: 0, cool: 0 };
+      const binHz = ctx.sampleRate / an.fftSize, lo = Math.max(1, Math.floor(80 / binHz)), hi = Math.ceil(2000 / binHz);
+      const db = new Float32Array(an.frequencyBinCount);
+      // armed: ready for a blow. After a candle goes out we wait for ~0.4 s of quiet before the next one,
+      // so one long breath only ever puts out one candle.
+      mic = { stream, ctx, raf: 0, since: 0, quiet: 0, armed: true };
       $("mic").classList.add("on"); $("mic").textContent = TXT.listening;
       const tick = (t) => {
-        an.getByteFrequencyData(bins);
-        let low = 0; for (let i = 1; i < hiBin; i++) low += bins[i]; low /= hiBin - 1;
-        const loud = low > 150;
-        if (loud && !mic.since) mic.since = t;
-        if (!loud) mic.since = 0;
-        if (mic.since && t - mic.since > 250 && t > mic.cool) {
-          const lit = state.items.filter((i) => i.type === "candle" && i.lit !== false).sort((a, b) => b.v - a.v);
-          if (lit.length) blowOut(lit[0]);
-          mic.since = 0; mic.cool = t + 900;
+        an.getFloatFrequencyData(db);
+        let sum = 0, logSum = 0, n = 0;
+        for (let i = lo; i < hi; i++) { const p = Math.pow(10, db[i] / 10) + 1e-12; sum += p; logSum += Math.log(p); n++; }
+        const mean = sum / n, level = 10 * Math.log10(mean), flat = Math.exp(logSum / n) / mean;
+        // breath is loud and noisy (flat spectrum); music and speech are tonal (peaky spectrum)
+        const blow = level > -48 && flat > 0.12;
+        if (!mic.armed) {
+          if (level < -55 || !blow) { if (!mic.quiet) mic.quiet = t; if (t - mic.quiet > 400) { mic.armed = true; mic.quiet = 0; } }
+          else mic.quiet = 0;
+        } else {
+          if (blow && !mic.since) mic.since = t;
+          if (!blow) mic.since = 0;
+          if (mic.since && t - mic.since > 250) {
+            const lit = state.items.filter((i) => i.type === "candle" && i.lit !== false).sort((a, b) => b.v - a.v);
+            if (lit.length) blowOut(lit[0]);
+            mic.since = 0; mic.armed = false; mic.quiet = 0;
+          }
         }
         mic.raf = requestAnimationFrame(tick);
       };
