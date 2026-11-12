@@ -293,7 +293,7 @@ body.panel .stage { padding-right: 420px; }
   <div class="recv-hint" id="recv-hint">Tap a candle to blow it out</div>
   <button type="button" class="exit" id="exit">‹ Back</button>
   <button type="button" class="mic relight" id="relight" hidden>Light them again</button>
-  <button type="button" class="mic" id="mic">Blow with your mic</button>
+  <button type="button" class="mic" id="mic">🌬️ Blow with your mic</button>
   <div class="player glass" id="player" hidden>
     <div class="pl-full" id="pl-full" hidden>
       <div class="pl-head">
@@ -732,8 +732,8 @@ body.panel .stage { padding-right: 420px; }
   // the receiving side's few words, in Korean for Korean browsers
   const KO = country === "KR";
   const TXT = KO
-    ? { bake: "나도 만들기", back: "‹ 돌아가기", relight: "다시 불 켜기", mic: "마이크로 불기", listening: "듣고 있어요… 후!", micOff: "마이크를 쓸 수 없어요. 초를 눌러 주세요.", hint: "초를 눌러 불을 꺼 보세요", melted: "아무도 불을 끄러 오지 않아서 초가 다 타 버렸어요." }
-    : { bake: "Bake one too", back: "‹ Back", relight: "Light them again", mic: "Blow with your mic", listening: "Listening… blow!", micOff: "Mic is off. Tap the candles instead.", hint: "Tap a candle to blow it out", melted: "The candles burned down before anyone came to blow them out." };
+    ? { bake: "🎂 나도 만들기", back: "‹ 돌아가기", relight: "다시 불 켜기", mic: "🌬️ 마이크로 불기", listening: "🌬️ 듣고 있어요… 후!", micOff: "마이크를 쓸 수 없어요. 초를 눌러 주세요.", hint: "초를 눌러 불을 꺼 보세요", melted: "아무도 불을 끄러 오지 않아서 초가 다 타 버렸어요." }
+    : { bake: "🎂 Bake one too", back: "‹ Back", relight: "Light them again", mic: "🌬️ Blow with your mic", listening: "🌬️ Listening… blow!", micOff: "Mic is off. Tap the candles instead.", hint: "Tap a candle to blow it out", melted: "The candles burned down before anyone came to blow them out." };
   async function api(path, opts = {}, ms = 6000) {
     const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
     try {
